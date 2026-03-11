@@ -10,7 +10,33 @@ import type {
   RequestOptions
 } from "./types";
 
-function transformRequestData(data: unknown) {
+function sortSerializableValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortSerializableValue);
+  }
+
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) =>
+      left.localeCompare(right)
+    );
+
+    return Object.fromEntries(
+      entries.map(([key, item]) => [key, sortSerializableValue(item)])
+    );
+  }
+
+  return value;
+}
+
+function serializeCacheValue(value: unknown) {
+  try {
+    return JSON.stringify(sortSerializableValue(value));
+  } catch {
+    return String(value);
+  }
+}
+
+export function transformRequestData(data: unknown) {
   if (
     data instanceof FormData ||
     typeof data === "string" ||
@@ -32,7 +58,7 @@ function transformRequestData(data: unknown) {
   }
 }
 
-function transformResponseData(data: unknown) {
+export function transformResponseData(data: unknown) {
   if (typeof data !== "string" || !data) {
     return data;
   }
@@ -42,6 +68,20 @@ function transformResponseData(data: unknown) {
   } catch {
     return data;
   }
+}
+
+export function createRequestCacheKey(
+  method: RequestMethod,
+  url: string,
+  options?: Pick<CacheableRequestOptions, "body" | "params">
+) {
+  const queryStr = qs.stringify(options?.params ?? {}, {
+    sort: (left, right) => left.localeCompare(right)
+  });
+
+  return `${method}:${url}${queryStr ? `?${queryStr}` : ""}${serializeCacheValue(
+    options?.body ?? {}
+  )}`;
 }
 
 export function createHttpRequest<T = unknown>(
@@ -106,18 +146,24 @@ function createCacheableHttp() {
     url: string,
     options?: CacheableRequestOptions
   ) {
-    const { body, params, expires = -1 } = options ?? {};
-    const queryStr = qs.stringify(params ?? {});
-    const key = `${method}:${url}${queryStr ? `?${queryStr}` : ""}${JSON.stringify(
-      body ?? {}
-    )}`;
+    const { expires = -1 } = options ?? {};
+    const key = createRequestCacheKey(method, url, options);
 
     if (!caches[key]) {
-      caches[key] = createHttpRequest<T>(method, url, options);
+      const request = createHttpRequest<T>(method, url, options);
+      caches[key] = request;
+
+      request.catch(() => {
+        if (caches[key] === request) {
+          delete caches[key];
+        }
+      });
 
       if (expires !== -1) {
         setTimeout(() => {
-          delete caches[key];
+          if (caches[key] === request) {
+            delete caches[key];
+          }
         }, expires);
       }
     }

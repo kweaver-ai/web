@@ -1,5 +1,17 @@
-import { cacheableHttp, createHttpRequest } from "./http-request";
-import { getCommonHttpHeaders, getHttpConfig, resetHttpConfig, setHttpConfig } from "./config";
+import {
+  cacheableHttp,
+  createHttpRequest,
+  createRequestCacheKey,
+  transformRequestData,
+  transformResponseData
+} from "./http-request";
+import {
+  getCommonHttpHeaders,
+  getHttpConfig,
+  normalizeLanguageTag,
+  resetHttpConfig,
+  setHttpConfig
+} from "./config";
 import type { CacheableRequestOptions, RequestOptions } from "./types";
 
 export const get = <T = unknown>(url: string, options?: RequestOptions) =>
@@ -25,10 +37,14 @@ export const cacheableGet = <T = unknown>(
 export {
   cacheableHttp,
   createHttpRequest,
+  createRequestCacheKey,
   getCommonHttpHeaders,
   getHttpConfig,
+  normalizeLanguageTag,
   resetHttpConfig,
-  setHttpConfig
+  setHttpConfig,
+  transformRequestData,
+  transformResponseData
 };
 
 export type {

@@ -28,7 +28,6 @@ spec:
             - "sh"
             - "-c"
             - |
-              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/workflow || true &&
               curl -H "Content-Type:application/json" -X PUT -d '
               [{
                 "name": "data-processing",

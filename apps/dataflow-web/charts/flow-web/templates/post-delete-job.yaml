@@ -28,5 +28,4 @@ spec:
             - "sh"
             - "-c"
             - >
-              curl -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/data-processing &&
-              curl -f -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/workflow
+              curl -X DELETE http://studio-web-service:8877/api/workstation/v1/webapp/data-processing

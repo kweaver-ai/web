@@ -81,9 +81,9 @@ describe('userInfoStore', () => {
     expect(isLoading).toBe(false)
   })
 
-  // TODO: 修复fetchUserInfo测试，当前getUserInfo未被调用，可能是内部判断逻辑问题
-  it.skip('should fetch user info successfully', async () => {
+  it('should fetch user info successfully', async () => {
     const testUser = { id: '1', name: '测试用户', email: 'test@example.com' } as any
+    ;(getAccessToken as vi.Mock).mockReturnValue('test-token')
     ;(getUserInfo as vi.Mock).mockResolvedValue(testUser)
     const { fetchUserInfo } = useUserInfoStore.getState()
     

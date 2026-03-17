@@ -8,6 +8,69 @@ KWeaver Web 的 React 内联 SVG 图标包。
 pnpm add @kweaver-web/icons react
 ```
 
+## 在 monorepo 内使用
+
+在 `apps/` 下的应用在构建时需要引用时，使用 **workspace 协议**：
+
+### 步骤 1：在应用中添加 workspace 依赖
+
+在应用的 `package.json` 中（如 `apps/dip/package.json`）：
+
+```json
+{
+  "dependencies": {
+    "@kweaver-web/icons": "workspace:*",
+    "react": "^18.3.1"
+  }
+}
+```
+
+### 步骤 2：安装依赖
+
+在 **仓库根目录** 执行：
+
+```bash
+pnpm install
+```
+
+pnpm 会将 `workspace:*` 解析为本地 `packages/icons` 包。
+
+### 步骤 3：构建顺序（自动处理）
+
+项目使用 Turbo，配置了 `"dependsOn": ["^build"]`。在根目录执行：
+
+```bash
+pnpm build
+```
+
+时，Turbo 会：
+1. 先构建 `packages/icons`（产出 `dist/`）
+2. 再构建依赖它的应用
+
+无需手动控制构建顺序。
+
+### 步骤 4：在代码中使用
+
+导入方式与发布到 npm 后相同：
+
+```tsx
+import { AddOutlined, ToolColored } from '@kweaver-web/icons'
+```
+
+### 防止误发布（可选）
+
+若需避免发布到 npm，在 `packages/icons/package.json` 中添加 `"private": true`：
+
+```json
+{
+  "name": "@kweaver-web/icons",
+  "private": true,
+  ...
+}
+```
+
+---
+
 ## 使用
 
 ```tsx

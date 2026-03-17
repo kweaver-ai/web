@@ -44,6 +44,9 @@ importers:
       '@kweaver-web/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@kweaver-web/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@tiptap/core':
         specifier: ^3.19.0
         version: 3.20.1(@tiptap/pm@3.20.1)

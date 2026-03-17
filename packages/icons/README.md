@@ -8,6 +8,69 @@ React inline SVG icon package for KWeaver Web.
 pnpm add @kweaver-web/icons react
 ```
 
+## Using in monorepo
+
+When apps under `apps/` need to reference this package during build, use the **workspace protocol**:
+
+### Step 1: Add workspace dependency in the app
+
+In the app's `package.json` (e.g. `apps/dip/package.json`):
+
+```json
+{
+  "dependencies": {
+    "@kweaver-web/icons": "workspace:*",
+    "react": "^18.3.1"
+  }
+}
+```
+
+### Step 2: Install dependencies
+
+From the **repository root**:
+
+```bash
+pnpm install
+```
+
+pnpm resolves `workspace:*` to the local `packages/icons` package.
+
+### Step 3: Build order (handled automatically)
+
+The project uses Turbo with `"dependsOn": ["^build"]`. When you run:
+
+```bash
+pnpm build
+```
+
+from the root, Turbo will:
+1. Build `packages/icons` first (output `dist/`)
+2. Then build any app that depends on it
+
+No manual build order is needed.
+
+### Step 4: Use in code
+
+Same import as when the package is published to npm:
+
+```tsx
+import { AddOutlined, ToolColored } from '@kweaver-web/icons'
+```
+
+### Prevent accidental publish (optional)
+
+To avoid accidental publish to npm, add `"private": true` to `packages/icons/package.json`:
+
+```json
+{
+  "name": "@kweaver-web/icons",
+  "private": true,
+  ...
+}
+```
+
+---
+
 ## Usage
 
 ```tsx

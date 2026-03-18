@@ -8,7 +8,7 @@ React inline SVG icon package for KWeaver Web.
 pnpm add @kweaver-web/icons react
 ```
 
-## Using in monorepo
+## Using internally
 
 When apps under `apps/` need to reference this package during build, use the **workspace protocol**:
 
@@ -119,12 +119,15 @@ Source URLs are configured in `scripts/config.ts`:
 ```ts
 // scripts/config.ts
 
+// Outlined icons
+const OutlinedLink = '//at.alicdn.com/t/c/font_xxxxx_xxxx.js'
+// Colored icons
+const ColoredLink = '//at.alicdn.com/t/c/font_xxxxx_xxxx.js'
+
 export const outlinedIconSource: IconSourceConfig = {
   kind: 'outlined',
   suffix: 'Outlined',
-  symbolUrl: normalizeSymbolUrl(
-    '//at.alicdn.com/t/c/font_5140342_41oht4imwjg.js',  // ← outlined Symbol URL
-  ),
+  symbolUrl: normalizeSymbolUrl(OutlinedLink),
   rawDir: 'raw-svgs/outlined',
   componentDir: 'src/components/outlined',
 }
@@ -132,9 +135,7 @@ export const outlinedIconSource: IconSourceConfig = {
 export const coloredIconSource: IconSourceConfig = {
   kind: 'colored',
   suffix: 'Colored',
-  symbolUrl: normalizeSymbolUrl(
-    '//at.alicdn.com/t/c/font_5140345_06gdygzlnnhx.js',  // ← colored Symbol URL
-  ),
+  symbolUrl: normalizeSymbolUrl(ColoredLink),
   rawDir: 'raw-svgs/colored',
   componentDir: 'src/components/colored',
 }
@@ -146,7 +147,7 @@ export const coloredIconSource: IconSourceConfig = {
 2. Open the target icon project
 3. Select the **Symbol** usage method
 4. Copy the **online URL** (e.g. `//at.alicdn.com/t/c/font_xxxxx_xxxx.js`)
-5. Paste it into `outlinedIconSource.symbolUrl` or `coloredIconSource.symbolUrl`
+5. Paste it into the `OutlinedLink` or `ColoredLink` constant
 
 Protocol-relative URLs starting with `//` are supported; the script adds `https:` automatically.
 

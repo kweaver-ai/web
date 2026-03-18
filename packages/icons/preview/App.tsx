@@ -8,7 +8,7 @@ import {
   filterPreviewItems,
   groupPreviewItems,
   toPreviewCopySnippet,
-} from '../src/preview/utils'
+} from '../src/preview-utils'
 import './styles.css'
 
 type IconComponent = (props: {

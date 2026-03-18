@@ -4,7 +4,7 @@ import {
   groupPreviewItems,
   toPreviewCopySnippet,
   type PreviewItem,
-} from './preview/utils'
+} from './preview-utils'
 
 const previewItems: PreviewItem[] = [
   {

@@ -8,7 +8,7 @@ KWeaver Web 的 React 内联 SVG 图标包。
 pnpm add @kweaver-web/icons react
 ```
 
-## 在 monorepo 内使用
+## 在内部使用
 
 在 `apps/` 下的应用在构建时需要引用时，使用 **workspace 协议**：
 
@@ -109,12 +109,15 @@ export function Example() {
 ```ts
 // scripts/config.ts
 
+// 线性库
+const OutlinedLink = '//at.alicdn.com/t/c/font_xxxxx_xxxx.js'
+// 彩色面性库
+const ColoredLink = '//at.alicdn.com/t/c/font_xxxxx_xxxx.js'
+
 export const outlinedIconSource: IconSourceConfig = {
   kind: 'outlined',
   suffix: 'Outlined',
-  symbolUrl: normalizeSymbolUrl(
-    '//at.alicdn.com/t/c/font_5140342_41oht4imwjg.js',  // ← 线性图标 Symbol 链接
-  ),
+  symbolUrl: normalizeSymbolUrl(OutlinedLink),
   rawDir: 'raw-svgs/outlined',
   componentDir: 'src/components/outlined',
 }
@@ -122,9 +125,7 @@ export const outlinedIconSource: IconSourceConfig = {
 export const coloredIconSource: IconSourceConfig = {
   kind: 'colored',
   suffix: 'Colored',
-  symbolUrl: normalizeSymbolUrl(
-    '//at.alicdn.com/t/c/font_5140345_06gdygzlnnhx.js',  // ← 彩色图标 Symbol 链接
-  ),
+  symbolUrl: normalizeSymbolUrl(ColoredLink),
   rawDir: 'raw-svgs/colored',
   componentDir: 'src/components/colored',
 }
@@ -136,7 +137,7 @@ export const coloredIconSource: IconSourceConfig = {
 2. 进入对应图标项目
 3. 点击「Symbol」获取方式
 4. 复制「在线链接」（形如 `//at.alicdn.com/t/c/font_xxxxx_xxxx.js`）
-5. 将链接填入 `outlinedIconSource.symbolUrl` 或 `coloredIconSource.symbolUrl`
+5. 将链接填入 `OutlinedLink` 或 `ColoredLink` 常量
 
 支持 `//` 开头的协议相对路径，脚本会自动加上 `https:`。
 

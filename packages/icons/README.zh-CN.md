@@ -172,8 +172,10 @@ pnpm build:lib     # 仅打包发布产物
 | `icon-tool`        | `ToolOutlined`       | `ToolColored`        |
 | `icon-align-right` | `AlignRightOutlined` | `AlignRightColored`  |
 | `icon-file-2`      | `File2Outlined`      | `File2Colored`       |
+| `icon-toolBox`     | `ToolBoxOutlined`    | `ToolBoxColored`     |
+| `icon-AR`          | `AROutlined`         | `ARColored`          |
 
-规则：去掉 `icon-` 前缀 → 按 `-` 分段转 PascalCase → 追加 `Outlined` 或 `Colored`。
+规则：去掉 `icon-` 前缀 → 按 `-` 分段，每段首字母大写、其余保持原样 → 追加 `Outlined` 或 `Colored`。
 
 ---
 

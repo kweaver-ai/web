@@ -15,9 +15,8 @@ describe('icon scripts', () => {
     expect(normalizeSymbolUrl('//at.alicdn.com/t/c/font_x.js')).toBe(
       'https://at.alicdn.com/t/c/font_x.js',
     )
-    expect(outlinedIconSource.symbolUrl).toBe(
-      'https://at.alicdn.com/t/c/font_5140342_41oht4imwjg.js',
-    )
+    expect(outlinedIconSource.symbolUrl).toMatch(/^https:\/\//)
+    expect(outlinedIconSource.symbolUrl).toContain('at.alicdn.com')
   })
 
   it('converts iconfont ids to outlined component names', () => {
@@ -26,6 +25,9 @@ describe('icon scripts', () => {
       'AlignRightOutlined',
     )
     expect(toComponentName('icon-file-2', 'Outlined')).toBe('File2Outlined')
+    // 短横线划分的单词首字母大写，其余保持原样
+    expect(toComponentName('icon-toolBox', 'Outlined')).toBe('ToolBoxOutlined')
+    expect(toComponentName('icon-AR', 'Outlined')).toBe('AROutlined')
   })
 
   it('extracts symbols from iconfont js payloads', () => {

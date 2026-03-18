@@ -218,11 +218,17 @@ export function buildIconSource(
       componentName,
       kind: source.kind,
     })
-    fs.writeFileSync(
-      path.join(outputDir, `${componentName}.tsx`),
-      componentSource,
-      'utf8',
+    const targetFileName = `${componentName}.tsx`
+    const targetPath = path.join(outputDir, targetFileName)
+    // Windows 文件系统大小写不敏感：若已存在仅大小写不同的旧文件（如 AfColored.tsx），
+    // 直接写入 AFColored.tsx 可能不会更新文件名。先删除旧文件再写入，确保文件名正确。
+    const existing = fs.readdirSync(outputDir).find(
+      (f) => f.toLowerCase() === targetFileName.toLowerCase() && f !== targetFileName,
     )
+    if (existing) {
+      fs.unlinkSync(path.join(outputDir, existing))
+    }
+    fs.writeFileSync(targetPath, componentSource, 'utf8')
   }
 
   assertUniqueComponentNames(componentNames, source.kind)

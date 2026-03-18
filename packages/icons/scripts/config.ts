@@ -1,7 +1,7 @@
 export type IconKind = 'outlined' | 'colored'
 
 // 线性库
-const OutlinedLink = '//at.alicdn.com/t/c/font_5140342_e8i0rnu4yaw.js'
+const OutlinedLink = '//at.alicdn.com/t/c/font_5140342_i0qkuv1tpr.js'
 // 彩色面性库
 const ColoredLink = '//at.alicdn.com/t/c/font_5140345_godrm8ixc4i.js'
 

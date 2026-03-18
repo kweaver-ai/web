@@ -182,8 +182,10 @@ pnpm build:lib     # Bundle publish artifacts only
 | `icon-tool`        | `ToolOutlined`       | `ToolColored`      |
 | `icon-align-right` | `AlignRightOutlined` | `AlignRightColored` |
 | `icon-file-2`      | `File2Outlined`      | `File2Colored`      |
+| `icon-toolBox`     | `ToolBoxOutlined`    | `ToolBoxColored`    |
+| `icon-AR`          | `AROutlined`         | `ARColored`         |
 
-Rule: remove `icon-` prefix → split by `-` and convert to PascalCase → append `Outlined` or `Colored`.
+Rule: remove `icon-` prefix → split by `-`, capitalize first letter of each segment (rest unchanged) → append `Outlined` or `Colored`.
 
 ---
 

@@ -1,90 +1,69 @@
-import { memo, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { Employee } from '@/apis'
-import { getDigitalEmployees } from '@/apis'
-import AiInput from '@/components/AiInput'
-import { useListService } from '@/hooks/useListService'
+import { Flex } from 'antd'
+import clsx from 'clsx'
+import { memo, useMemo } from 'react'
+import intl from 'react-intl-universal'
+import AiPromptInput from '@/components/DipChatKit/components/AiPromptInput'
+import { useLanguageStore } from '@/stores/languageStore'
 import { useUserInfoStore } from '@/stores/userInfoStore'
-import { useUserWorkPlanStore } from '@/stores/userWorkPlanStore'
+import styles from './index.module.less'
 
 const Home = () => {
-  const navigate = useNavigate()
   const { userInfo } = useUserInfoStore()
-  const { plans, fetchPlans } = useUserWorkPlanStore()
-  useListService<Employee>({
-    fetchFn: getDigitalEmployees,
-  })
-  const employees: Employee[] = [
-    {
-      id: 1,
-      name: '运营小助手',
-      description: '负责日常运营数据统计、报表生成和用户消息回复',
-      icon: '',
-      creator: '张三',
-      created_at: new Date().toISOString(),
-      editor: '张三',
-      edited_at: new Date().toISOString(),
-      status: 1,
-      users: [
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-        userInfo,
-      ],
-      plan_count: 100,
-      task_success_rate: [
-        { day: '2026-03-13', value: 80 },
-        { day: '2026-03-12', value: 90 },
-        { day: '2026-03-11', value: 60 },
-        { day: '2026-03-10', value: 50 },
-        { day: '2026-03-09', value: 70 },
-        { day: '2026-03-08', value: 30 },
-        { day: '2026-03-07', value: 50 },
-      ],
-    },
-  ]
+  const language = useLanguageStore((state) => state.language)
 
-  useEffect(() => {
-    if (!plans.length) {
-      void fetchPlans()
-    }
-  }, [plans.length, fetchPlans])
+  const mentionOptions = useMemo(
+    () => [
+      {
+        id: 'plan-collaboration',
+        label: intl.get('home.mention.planCollaborationAssistant'),
+      },
+      {
+        id: 'finance-audit',
+        label: intl.get('home.mention.financeAuditAssistant'),
+      },
+      {
+        id: 'customer-service',
+        label: intl.get('home.mention.customerServiceAudit'),
+      },
+      {
+        id: 'data-compliance',
+        label: intl.get('home.mention.dataComplianceAuditor'),
+      },
+      {
+        id: 'logistics-dispatch',
+        label: intl.get('home.mention.logisticsDispatchAssistant'),
+      },
+      {
+        id: 'vendor-risk',
+        label: intl.get('home.mention.vendorRiskMonitor'),
+      },
+    ],
+    [language],
+  )
 
-  /** 发送消息 */
-  const handleSend: Parameters<typeof AiInput>[0]['onSubmit'] = () => {
-    navigate(`/studio/home`)
+  const handleSubmit = (data: any) => {
+    console.log('data', data)
+    // navigate('/studio/home')
   }
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return '上午好'
-    if (hour < 18) return '下午好'
-    return '晚上好'
-  }
+  const displayName = userInfo?.vision_name || intl.get('home.defaultName')
 
   return (
-    <div className="h-full p-6 py-8 flex flex-col relative">
-      {/* 顶部：用户信息 */}
-      <div className="text-3xl font-medium tracking-normal flex-shrink-0">
-        {getGreeting()}，{userInfo?.vision_name}
-      </div>
-      <div className="text-base text-[--dip-text-color-65] mt-3">
-        当前有{plans.length}个计划正在执行中，数字员工持续为你工作。
-      </div>
+    <div className={clsx('Home', styles.homePage)}>
+      <div className={styles.homeContent}>
+        <Flex vertical align="center" className={styles.hero}>
+          {/* 遵守 AGENTS.md 规范：不使用 Typography.Title，改为原生 h1 标签 */}
+          <h1 className={styles.title}>{intl.get('home.title', { name: displayName })}</h1>
+          {/* 遵守 AGENTS.md 规范：不使用 Typography.Text，改为原生 div 标签 */}
+          <div className={styles.subtitle}>{intl.get('home.subtitle')}</div>
+        </Flex>
 
-      <div className="flex-1 flex flex-col items-center justify-center gap-y-8">
-        {/* 输入框 */}
-        <div className="w-full mt-8">
-          <AiInput
-            employees={employees}
-            onSubmit={handleSend}
-            placeholder="输入任何指令，通过@指定数字员工即刻为你执行"
+        <div className={styles.promptSection}>
+          <AiPromptInput
+            mentionOptions={mentionOptions}
+            placeholder={intl.get('home.inputPlaceholder')}
+            onSubmit={handleSubmit}
+            autoSize={{ minRows: 3, maxRows: 6 }}
           />
         </div>
       </div>

@@ -1,0 +1,70 @@
+.homePage {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(243, 247, 252, 0.98) 40%, #f5f7fb 100%);
+}
+
+.homeContent {
+  width: min(100%, 760px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.hero {
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  text-align: center;
+  font-size: 34px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  line-height: 22px;
+  color: rgba(15, 23, 42, 0.52);
+}
+
+.promptSection {
+  width: 100%;
+}
+
+.quickEntries {
+  width: 100%;
+}
+
+.quickEntryButton {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.quickEntryIcon {
+  margin-right: 6px;
+  color: #4f83ff;
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .homePage {
+    padding: 24px 16px 32px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+}

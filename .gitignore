@@ -7,6 +7,8 @@ coverage
 .DS_Store
 .vscode
 .cursor
+.idea
+.codex
 
 apps/*/node_modules
 apps/*/.turbo

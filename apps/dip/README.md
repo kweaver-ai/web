@@ -1,46 +1,54 @@
-# DIP
+# DIP 数字员工
 
-## Setup
-
-Install the dependencies:
+## 安装依赖
 
 ```bash
-yarn install
+pnpm install
 ```
 
-## Get started
-
-Start the dev server, and the app will be available at [http://localhost:3000](http://localhost:3000).
+## 启动
 
 ```bash
-yarn run dev
+pnpm run dev
 ```
 
-For local debugging with backend API proxy, you can provide RSBuild env vars in `.env.local`:
+默认访问地址：[http://localhost:3000](http://localhost:3000)
+
+## 调试
+
+### 修改配置
+
+复制 `.env.example` → `.env.local`，修改配置
 
 ```bash
-DEBUG_ORIGIN=https://your-backend-origin
-PUBLIC_TOKEN=your_access_token
-PUBLIC_REFRESH_TOKEN=your_refresh_token
+DEBUG_ORIGIN=https://your-backend-origin # DIP Studio 服务的访问地址（本地通常是 http://127.0.0.1:3000）
+PUBLIC_TOKEN=your_access_token # 可以为空
+PUBLIC_REFRESH_TOKEN=your_refresh_token # 可以为空
 ```
 
-In dev mode, frontend auth reads Cookie first; if missing, it falls back to `PUBLIC_TOKEN` and `PUBLIC_REFRESH_TOKEN`.
+### 跳过认证
 
-Build the app for production:
+在 `.env.local` 中新增配置：
+
+`PUBLIC_SKIP_AUTH=true`
+
+### 切换 admin / 普通用户
+
+在 `.env.local` 中新增配置：
+
+`PUBLIC_IS_ADMIN=true`
+
+
+## 生产构建
+
+构建：
 
 ```bash
 yarn run build
 ```
 
-Preview the production build locally:
+本地预览生产版本:
 
 ```bash
 yarn run preview
 ```
-
-## Learn more
-
-To learn more about Rsbuild, check out the following resources:
-
-- [Rsbuild documentation](https://rsbuild.rs) - explore Rsbuild features and APIs.
-- [Rsbuild GitHub repository](https://github.com/web-infra-dev/rsbuild) - your feedback and contributions are welcome!

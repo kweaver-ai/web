@@ -21,6 +21,7 @@ import {
   DownOutlined,
   CloseOutlined,
   CaretDownOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import DataFlowDesigner from "./data-flow-designer";
 import { FlowDetail, ITaskItem, ITaskParams, PermissionType } from "./types";
@@ -151,6 +152,7 @@ const DataStudioPanel: React.FC = () => {
 
   const [isCreateModelVisible, setIsCreateModelVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadFileRunLoading, setUploadFileRunLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [getFormTriggerParameters, FormTriggerModalElement] =
     useFormTriggerModal();
@@ -183,7 +185,7 @@ const DataStudioPanel: React.FC = () => {
     () => ({
       isEditTrigger: false,
     }),
-    []
+    [],
   );
 
   // 获取数据
@@ -305,7 +307,7 @@ const DataStudioPanel: React.FC = () => {
       ),
     },
     {
-      title: t('dataStudio.overviewStatistics.creator'),
+      title: t("dataStudio.overviewStatistics.creator"),
       dataIndex: "creator",
       key: "creator",
       width: 200,
@@ -328,7 +330,7 @@ const DataStudioPanel: React.FC = () => {
 
   const handleFlowSave = async (
     flowDetail: FlowDetail,
-    dataSourceChanged: boolean
+    dataSourceChanged: boolean,
   ) => {
     const { id } = flowDetail;
     // if (!hasTargetOperator(flowDetail?.steps)) {
@@ -385,7 +387,7 @@ const DataStudioPanel: React.FC = () => {
           type
         ) {
           const { data } = await API.axios.get(
-            `${prefixUrl}/api/automation/v1/dag/suggestname/${flow?.title}`
+            `${prefixUrl}/api/automation/v1/dag/suggestname/${flow?.title}`,
           );
           form.setFieldValue("name", data?.name);
           setIsModalOpen(true);
@@ -395,7 +397,7 @@ const DataStudioPanel: React.FC = () => {
       // 编辑
       await API.axios.put(
         `${prefixUrl}/api/automation/v1/data-flow/flow/${id}`,
-        { ...flow }
+        { ...flow },
       );
       message.success(t("edit.success", "编辑成功"));
     }
@@ -429,25 +431,25 @@ const DataStudioPanel: React.FC = () => {
               const {
                 data: { steps },
               } = await API.axios.get(
-                `${prefixUrl}/api/automation/v1/dag/${row.id}`
+                `${prefixUrl}/api/automation/v1/dag/${row.id}`,
               );
               const parameters = await getFormTriggerParameters(
                 (steps[0].parameters as any).fields,
-                row.title
+                row.title,
               );
 
               await API.axios.post(
                 `/api/automation/v1/run-instance-form/${row.id}`,
                 {
                   data: parameters,
-                }
+                },
               );
             } else {
               await API.axios.post(
                 row.trigger === "manually"
                   ? `${prefixUrl}/api/automation/v1/run-instance/${row.id}`
                   : `${prefixUrl}/api/automation/v1/trigger/cron/${row.id}`,
-                {}
+                {},
               );
             }
           } catch (error) {
@@ -456,7 +458,7 @@ const DataStudioPanel: React.FC = () => {
               error: error,
             });
           }
-        })
+        }),
       );
       // 如果有失败的任务，显示错误信息
       if (errors.length > 0) {
@@ -464,7 +466,7 @@ const DataStudioPanel: React.FC = () => {
           errors.some(
             (error) =>
               error.error.response.data.code ===
-              "ContentAutomation.TaskNotFound"
+              "ContentAutomation.TaskNotFound",
           )
         ) {
           message.error(t("datastudio.edit.taskNotFound", "任务已不存在"));
@@ -498,9 +500,9 @@ const DataStudioPanel: React.FC = () => {
           await Promise.all(
             selectedRows.map((row) =>
               API.axios.delete(
-                `${prefixUrl}/api/automation/v1/data-flow/flow/${row.id}`
-              )
-            )
+                `${prefixUrl}/api/automation/v1/data-flow/flow/${row.id}`,
+              ),
+            ),
           );
           message.success(t("delete.success", "删除成功"));
         } catch (error) {
@@ -542,6 +544,61 @@ const DataStudioPanel: React.FC = () => {
 
   const hasRun = (task: ITaskItem) => {
     return task.trigger === "cron" || task.trigger === "manually";
+  };
+
+  // 是否有上传文件运行按钮
+  const hasUploadFileRun = (task: ITaskItem) => {
+    return (
+      permissionCheckInfo?.includes(PermissionType.ManualExec) &&
+      task.actions?.[0] === "@trigger/dataflow-doc"
+    );
+  };
+
+  const uploadDataflowDocTriggerRun = async (file: File) => {
+    const dagId = selectedRows[0]?.id;
+    if (!dagId) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setUploadFileRunLoading(true);
+    try {
+      await API.axios.post(
+        `${prefixUrl}/api/automation/v2/dataflow-doc/trigger/${dagId}`,
+        formData,
+      );
+      message.success(
+        t("datastudio.uploadFileRun.success", "上传并触发运行成功"),
+      );
+    } catch (error: any) {
+      handleErr({ error: error?.response });
+    } finally {
+      setUploadFileRunLoading(false);
+    }
+  };
+
+  const uploadFileRunMaxBytes = 100 * 1024 * 1024;
+
+  const uploadFileRunProps = {
+    name: "file",
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file: File) => {
+      if (file.size > uploadFileRunMaxBytes) {
+        message.info(
+          t(
+            "datastudio.uploadFileRun.maxSizeExceeded",
+            "文件大小不能超过 100MB",
+            { max: 100 },
+          ),
+        );
+        return Upload.LIST_IGNORE;
+      }
+      void uploadDataflowDocTriggerRun(file);
+      return false;
+    },
   };
 
   // 编辑流程配置
@@ -623,10 +680,10 @@ const DataStudioPanel: React.FC = () => {
           <Menu.Item key="edit-trigger" onClick={() => setIsVersionOpen(true)}>
             <img
               src={versionIcon}
-              alt={t('version')}
+              alt={t("version")}
               className={styles["edit-icon"]}
             />
-            {t('version')}
+            {t("version")}
           </Menu.Item>
         )}
       </Menu>
@@ -637,7 +694,7 @@ const DataStudioPanel: React.FC = () => {
       try {
         const { id } = selectedRows[0];
         const { data } = await API.axios.get(
-          `${prefixUrl}/api/automation/v1/dag/${id}`
+          `${prefixUrl}/api/automation/v1/dag/${id}`,
         );
         const jsonData = _.pick(data, [
           "title",
@@ -680,6 +737,18 @@ const DataStudioPanel: React.FC = () => {
                 {t("datastudio.button.run", "运行")}
               </Button>
             )}
+          {hasUploadFileRun(selectedRows[0]) && (
+            <Upload {...uploadFileRunProps}>
+              <Button
+                icon={
+                  <UploadOutlined style={{ fontSize: 16, color: "#666666" }} />
+                }
+                loading={uploadFileRunLoading}
+              >
+                {t("datastudio.button.uploadFileRun", "上传文件运行")}
+              </Button>
+            </Upload>
+          )}
           {permissionCheckInfo?.includes(PermissionType.Modify) && (
             <Dropdown overlay={editMenu} placement="bottom">
               <Button
@@ -791,12 +860,12 @@ const DataStudioPanel: React.FC = () => {
 
   // 完成触发方式配置
   const handleTriggerConfigOk = async (trigger_config: Trigger) => {
-//  if (!hasTargetOperator(currentFlowDetail.current?.steps)) {
-//    const confirm = await hasOperatorMessage(microWidgetProps?.container);
-//    if (!confirm) {
-//      return;
-//    }
-//  }
+    //  if (!hasTargetOperator(currentFlowDetail.current?.steps)) {
+    //    const confirm = await hasOperatorMessage(microWidgetProps?.container);
+    //    if (!confirm) {
+    //      return;
+    //    }
+    //  }
     currentFlowDetail.current = {
       ...currentFlowDetail.current,
       trigger_config,
@@ -854,7 +923,7 @@ const DataStudioPanel: React.FC = () => {
     try {
       await API.axios.put(
         `${prefixUrl}/api/automation/v1/data-flow/flow/${id}`,
-        { ...flow }
+        { ...flow },
       );
       message.success(t("edit.success", "编辑成功"));
       fetchTasks(); // 刷新列表
@@ -913,7 +982,7 @@ const DataStudioPanel: React.FC = () => {
     try {
       const { data } = await API.axios.post(
         `${prefixUrl}/api/automation/v1/permissions/check`,
-        { resource_ids }
+        { resource_ids },
       );
       setIsPermissionCheckInfo(data?.perms);
     } catch (error) {}

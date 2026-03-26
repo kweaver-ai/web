@@ -1135,6 +1135,8 @@
     "error.serviceError": "服務異常，請您稍後再試",
     "datastudio.create.selectAtlas": "選擇知識網絡",
     "datastudio.create.selectscope": "選擇適用範圍",
+    "datastudio.create.newDoc.targetFile": "目標文件",
+    "datastudio.create.newDoc.runtimeSpecified": "運行時指定",
     "datastudio.create.triggerUpdate": "觸發更新方式",
     "graph": "知識網絡",
     "graphPlaceholder": "請選擇知識網絡",

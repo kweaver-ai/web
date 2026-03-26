@@ -1147,6 +1147,8 @@
     "error.serviceError": "Service exception, please try again later",
     "datastudio.create.selectAtlas": "Select knowledge graph",
     "datastudio.create.selectscope": "Select applicable scope",
+    "datastudio.create.newDoc.targetFile": "Target file",
+    "datastudio.create.newDoc.runtimeSpecified": "Specified at runtime",
     "datastudio.create.triggerUpdate": "Trigger update method",
     "graph": "Knowledge Graph",
     "graphPlaceholder": "Please select a knowledge graph",

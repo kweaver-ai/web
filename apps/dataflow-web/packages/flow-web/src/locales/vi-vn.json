@@ -1135,6 +1135,8 @@
     "create.success": "Tạo mới thành công",
     "error.serviceError": "Dịch vụ gặp sự cố, vui lòng thử lại sau",
     "datastudio.create.selectAtlas": "Chọn biểu đồ tri thức",
+    "datastudio.create.newDoc.targetFile": "Tệp mục tiêu",
+    "datastudio.create.newDoc.runtimeSpecified": "Chỉ định khi chạy",
     "datastudio.create.triggerUpdate": "Kích hoạt cập nhật - Cập nhật biểu đồ hàng tuần",
     "graph": "Biểu đồ tri thức",
     "graphPlaceholder": "Chọn biểu đồ tri thức",

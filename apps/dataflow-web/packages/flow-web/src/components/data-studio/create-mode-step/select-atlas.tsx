@@ -1,4 +1,5 @@
 import { Button, Form, Select, Space, Typography } from "antd";
+import { InfoCircleOutlined } from "@ant-design/icons";
 import { API, useTranslate } from "@applet/common";
 import { DefaultOptionType } from "antd/lib/select";
 import styles from "./create-mode-step.module.less";
@@ -69,6 +70,7 @@ export enum ItemType {
   Entity = "entity_ids",
   Doc = "selectedDoc",
   IndexBase = "indexBase",
+  NewDoc = "newSelectedDoc",
 }
 
 const DEFAULT_ENTITIES = [
@@ -247,7 +249,11 @@ export const SelectAtlas = ({
   const handleSubmit = async () => {
     Promise.all([
       new Promise((reslove, reject) =>
-        docRef.current?.validate() ? reslove(true) : reject(false),
+        docRef.current
+          ? docRef.current?.validate()
+            ? reslove(true)
+            : reject(false)
+          : reslove(true),
       ),
       form.validateFields(),
     ]).then(() => {
@@ -428,6 +434,28 @@ export const SelectAtlas = ({
               />
             </FormItem>
           </div>
+        </div>
+      ),
+    },
+    [ItemType.NewDoc]: {
+      Component: (
+        <div style={{ marginBottom: 24 }}>
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              color: "rgba(0, 0, 0, 0.85)",
+            }}
+          >
+            {t("datastudio.create.newDoc.targetFile", "目标文件")}
+          </div>
+          <Space size={6}>
+            <InfoCircleOutlined style={{ color: "rgba(0, 0, 0, 0.45)" }} />
+            <Text type="secondary">
+              {t("datastudio.create.newDoc.runtimeSpecified", "运行时指定")}
+            </Text>
+          </Space>
         </div>
       ),
     },

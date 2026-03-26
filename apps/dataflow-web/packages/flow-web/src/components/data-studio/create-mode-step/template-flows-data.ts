@@ -1774,7 +1774,7 @@ export const Templates = {
     fourthDesc: "datastudio.create.templateFlowsPdfParse", //"PDF解析共包含 2条流程，您还需要完善流程配置：",
     workflows: PdfParseTemplates,
     complete: completePdfParseTemplate,
-    selectTypes: [ItemType.Doc, ItemType.IndexBase],
+    selectTypes: [ItemType.NewDoc, ItemType.IndexBase],
   },
 };
 

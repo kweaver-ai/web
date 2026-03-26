@@ -1152,6 +1152,8 @@
     "error.serviceError": "服务异常，请您稍后再试",
     "datastudio.create.selectAtlas": "选择知识网络",
     "datastudio.create.selectscope": "选择适用范围",
+    "datastudio.create.newDoc.targetFile": "目标文件",
+    "datastudio.create.newDoc.runtimeSpecified": "运行时指定",
     "datastudio.create.triggerUpdate": "触发更新方式",
     "graph": "知识网络",
     "graphPlaceholder": "请选择知识网络",

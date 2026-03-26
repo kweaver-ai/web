@@ -21,7 +21,6 @@ import {
   DownOutlined,
   CloseOutlined,
   CaretDownOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import DataFlowDesigner from "./data-flow-designer";
 import { FlowDetail, ITaskItem, ITaskParams, PermissionType } from "./types";
@@ -542,15 +541,23 @@ const DataStudioPanel: React.FC = () => {
     resetPage();
   };
 
+  // 数据源是否是非结构化数据
+  const isNonStructuredDataSource = (task: ITaskItem) => {
+    return task?.actions?.[0] === "@trigger/dataflow-doc";
+  };
+
   const hasRun = (task: ITaskItem) => {
-    return task.trigger === "cron" || task.trigger === "manually";
+    return (
+      !isNonStructuredDataSource(task) &&
+      (task.trigger === "cron" || task.trigger === "manually")
+    );
   };
 
   // 是否有上传文件运行按钮
   const hasUploadFileRun = (task: ITaskItem) => {
     return (
       permissionCheckInfo?.includes(PermissionType.ManualExec) &&
-      task.actions?.[0] === "@trigger/dataflow-doc"
+      isNonStructuredDataSource(task)
     );
   };
 
@@ -649,14 +656,16 @@ const DataStudioPanel: React.FC = () => {
           />
           {t("datastudio.edit.flow", "编辑流程配置")}
         </Menu.Item>
-        <Menu.Item key="edit-trigger" onClick={() => editFlow("trigger")}>
-          <img
-            src={triggerSVG}
-            alt="更改触发方式"
-            className={styles["edit-icon"]}
-          />
-          {t("datastudio.edit.trigger", "更改触发方式")}
-        </Menu.Item>
+        {!isNonStructuredDataSource(selectedRows?.[0]) && (
+          <Menu.Item key="edit-trigger" onClick={() => editFlow("trigger")}>
+            <img
+              src={triggerSVG}
+              alt="更改触发方式"
+              className={styles["edit-icon"]}
+            />
+            {t("datastudio.edit.trigger", "更改触发方式")}
+          </Menu.Item>
+        )}
         <Menu.Item key="edit-trigger-name" onClick={() => editFlow("name")}>
           <img src={renameSVG} alt="重命名" className={styles["edit-icon"]} />
           {t("datastudio.edit.rename", "重命名")}
@@ -741,7 +750,11 @@ const DataStudioPanel: React.FC = () => {
             <Upload {...uploadFileRunProps}>
               <Button
                 icon={
-                  <UploadOutlined style={{ fontSize: 16, color: "#666666" }} />
+                  <img
+                    src={runSVG}
+                    alt="上传文件运行"
+                    className={styles["edit-icon"]}
+                  />
                 }
                 loading={uploadFileRunLoading}
               >

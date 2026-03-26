@@ -4,6 +4,7 @@ import type {
   DipChatKitCreateSessionKeyRequest,
   DipChatKitCreateSessionKeyResponse,
   DipChatKitDigitalHumanList,
+  DipChatKitDigitalHumanDetail,
   DipChatKitSessionArchiveSubpathOptions,
   DipChatKitSessionArchiveSubpathResponse,
   DipChatKitGetSessionMessagesParams,
@@ -51,6 +52,9 @@ export const getDigitalHumanList = (): Promise<DipChatKitDigitalHumanList> => {
   p2.abort = p1.abort
   return p2
 }
+
+export const getDigitalHumanDetail = (id: string): Promise<DipChatKitDigitalHumanDetail> =>
+  get(`${BASE}/digital-human/${encodeURIComponent(id)}`) as Promise<DipChatKitDigitalHumanDetail>
 
 export const getDigitalHumanSessionMessages = (
   sessionId: string,

@@ -42,6 +42,17 @@ export const wait = async (ms: number): Promise<void> => {
   })
 }
 
+export const parseAgentIdFromSessionKey = (sessionKey: string): string => {
+  const normalizedSessionKey = sessionKey.trim()
+  if (!normalizedSessionKey.startsWith('agent:')) return ''
+
+  const parts = normalizedSessionKey.split(':')
+  if (parts.length < 3) return ''
+  if (parts[0] !== 'agent') return ''
+
+  return parts[1]?.trim() || ''
+}
+
 export const buildDefaultMessageTurnsFromSubmitPayload = (
   payload?: AiPromptSubmitPayload,
 ): DipChatKitMessageTurn[] => {

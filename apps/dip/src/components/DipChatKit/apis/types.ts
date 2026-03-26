@@ -58,6 +58,11 @@ export interface DipChatKitDigitalHuman {
 
 export type DipChatKitDigitalHumanList = DipChatKitDigitalHuman[]
 
+export interface DipChatKitDigitalHumanDetail {
+  id: string
+  name: string
+}
+
 export interface DipChatKitResponseSSEOptions {
   sessionKey: string
   timeout?: number

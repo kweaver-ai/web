@@ -1,4 +1,4 @@
-import { Splitter } from 'antd'
+import { Splitter, message } from 'antd'
 import { XProvider } from '@ant-design/x'
 import type { XProviderProps } from '@ant-design/x'
 import enUSX from '@ant-design/x/locale/en_US'
@@ -8,14 +8,20 @@ import zhCNAntd from 'antd/locale/zh_CN'
 import zhTW from 'antd/locale/zh_TW'
 import clsx from 'clsx'
 import type React from 'react'
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import intl from 'react-intl-universal'
+import { getDigitalHumanDetail } from './apis'
 import ChatContentArea from './components/ChatContentArea'
 import DipChatHeader from './components/DipChatHeader'
 import RightSideArea from './components/RightSideArea'
 import styles from './index.module.less'
 import DipChatKitStoreProvider, { useDipChatKitStore } from './store'
 import type { DipChatKitLocale, DipChatKitProps } from './types'
-import { buildDefaultMessageTurnsFromSubmitPayload, getConversationTitle } from './utils'
+import {
+  buildDefaultMessageTurnsFromSubmitPayload,
+  getConversationTitle,
+  parseAgentIdFromSessionKey,
+} from './utils'
 
 const zhTWX: XProviderProps['locale'] = {
   ...zhCN,
@@ -91,16 +97,74 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
     closePreview,
     setChatPanelSize,
   } = useDipChatKitStore()
+  const [digitalHumanName, setDigitalHumanName] = useState('')
+  const digitalHumanNameCacheRef = useRef<Record<string, string>>({})
 
   const conversationTitle = useMemo(() => {
     return getConversationTitle(messageTurns)
   }, [messageTurns])
+  const digitalHumanAgentId = useMemo(() => {
+    const normalizedSessionId = sessionId?.trim()
+    if (normalizedSessionId) {
+      const sessionIdAgentId = parseAgentIdFromSessionKey(normalizedSessionId)
+      if (sessionIdAgentId) {
+        return sessionIdAgentId
+      }
+    }
+
+    for (let index = messageTurns.length - 1; index >= 0; index -= 1) {
+      const currentSessionKey = messageTurns[index]?.sessionKey?.trim()
+      if (currentSessionKey) {
+        const turnSessionAgentId = parseAgentIdFromSessionKey(currentSessionKey)
+        if (turnSessionAgentId) {
+          return turnSessionAgentId
+        }
+      }
+    }
+
+    return ''
+  }, [messageTurns, sessionId])
 
   const previewVisible = preview.visible
 
+  useEffect(() => {
+    if (!digitalHumanAgentId) {
+      setDigitalHumanName('')
+      return
+    }
+
+    const cachedDigitalHumanName = digitalHumanNameCacheRef.current[digitalHumanAgentId]
+    if (cachedDigitalHumanName !== undefined) {
+      setDigitalHumanName(cachedDigitalHumanName)
+      return
+    }
+
+    let disposed = false
+
+    getDigitalHumanDetail(digitalHumanAgentId)
+      .then((detail) => {
+        if (disposed) return
+        const nextDigitalHumanName = detail.name?.trim() || digitalHumanAgentId
+        digitalHumanNameCacheRef.current[digitalHumanAgentId] = nextDigitalHumanName
+        setDigitalHumanName(nextDigitalHumanName)
+      })
+      .catch(() => {
+        if (disposed) return
+        digitalHumanNameCacheRef.current[digitalHumanAgentId] = digitalHumanAgentId
+        setDigitalHumanName(digitalHumanAgentId)
+        message.error(
+          intl.get('dipChatKit.loadDigitalHumanDetailFailed').d('加载数字员工信息失败'),
+        )
+      })
+
+    return () => {
+      disposed = true
+    }
+  }, [digitalHumanAgentId])
+
   return (
     <div className={clsx('DipChatKit', styles.root, className)} style={style}>
-      {showHeader && <DipChatHeader title={conversationTitle} />}
+      {showHeader && <DipChatHeader title={conversationTitle} digitalHumanName={digitalHumanName} />}
       <div className={styles.body}>
         <Splitter
           className={clsx(styles.bodySplitter, !previewVisible && styles.bodySplitterPreviewHidden)}

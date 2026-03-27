@@ -2,6 +2,8 @@ import type { DipChatKitSessionMessage } from '../../apis/types'
 import type { DipChatKitAnswerEvent, DipChatKitMessageTurn } from '../../types'
 import type { AiPromptSubmitPayload } from '../AiPromptInput/types'
 
+const SYSTEM_ROLE = 'system'
+
 export const buildRegeneratePayload = (turn: DipChatKitMessageTurn): AiPromptSubmitPayload => {
   const files = turn.questionAttachments
     .map((attachment) => attachment.file)
@@ -179,18 +181,7 @@ const createSessionEvent = (
     }
   }
 
-  if (role === 'system') {
-    return {
-      id: `session_event_system_${index}`,
-      type: 'system',
-      role,
-      text,
-      timestamp,
-      details,
-    }
-  }
-
-  if (role && role !== 'assistant' && role !== 'user') {
+  if (role && role !== 'assistant' && role !== 'user' && role !== SYSTEM_ROLE) {
     return {
       id: `session_event_unknown_${index}`,
       type: 'unknown',
@@ -252,6 +243,10 @@ export const mapSessionMessagesToTurns = (
     const content = normalizeSessionMessageContent(message.content).trim()
     const createdAt = normalizeSessionCreatedAt(message.ts)
 
+    if (role === SYSTEM_ROLE) {
+      return
+    }
+
     if (role === 'user') {
       const nextTurn = createEmptyTurn(index, createdAt, sessionKey, content, message.id)
       turns.push(nextTurn)
@@ -276,7 +271,7 @@ export const mapSessionMessagesToTurns = (
       nextTurn.answerEvents.push(event)
     }
 
-    if (role !== 'assistant' && content) {
+    if (role !== 'assistant' && role !== SYSTEM_ROLE && content) {
       nextTurn.answerMarkdown = content
     }
 

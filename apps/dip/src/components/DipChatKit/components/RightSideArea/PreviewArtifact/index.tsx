@@ -1,7 +1,5 @@
 import { CloseOutlined, DownloadOutlined } from '@ant-design/icons'
 import { CodeHighlighter } from '@ant-design/x'
-import XMarkdown from '@ant-design/x-markdown'
-import '@ant-design/x-markdown/dist/x-markdown.css'
 import { Avatar, Button, message, Segmented, Skeleton, Tooltip } from 'antd'
 import clsx from 'clsx'
 import type React from 'react'
@@ -9,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import intl from 'react-intl-universal'
 import { getSessionArchiveSubpath } from '../../../apis'
 import ScrollContainer from '../../ScrollContainer'
+import PreviewMarkdown from '../PreviewMarkdown'
 import styles from './index.module.less'
 import type { PreviewArtifactProps } from './types'
 
@@ -121,7 +120,7 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
     const sessionKey = artifactInfo.sessionKey.trim()
     const subpath = artifactInfo.subpath.trim()
     const fileName = (artifactInfo.fileName || artifactInfo.subpath || '').trim()
-    if (!sessionKey || !subpath || !fileName) return null
+    if (!(sessionKey && subpath && fileName)) return null
 
     return {
       sessionKey,
@@ -399,7 +398,7 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
     if (state.mode === 'markdown') {
       return (
         <div className={styles.markdownWrap}>
-          <XMarkdown className={styles.markdownPreview}>{state.textContent}</XMarkdown>
+          <PreviewMarkdown content={state.textContent} />
         </div>
       )
     }

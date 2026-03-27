@@ -60,6 +60,9 @@
     "toolCountText": "{count} tools",
     "toolMoreSuffix": "+{count} more",
     "toolCompleted": "Completed",
-    "toolOutputLabel": "Tool output"
+    "toolOutputLabel": "Tool output",
+    "generating": "Generating",
+    "generatingDesc": "Please wait...",
+    "toolCalling": "Calling tools"
   }
 }

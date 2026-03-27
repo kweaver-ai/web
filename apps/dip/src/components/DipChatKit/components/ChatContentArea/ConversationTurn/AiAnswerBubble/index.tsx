@@ -5,7 +5,7 @@ import {
   RedoOutlined,
   UpOutlined,
 } from '@ant-design/icons'
-import { Bubble, CodeHighlighter, Mermaid } from '@ant-design/x'
+import { Bubble, CodeHighlighter, Mermaid, ThoughtChain } from '@ant-design/x'
 import XMarkdown, { type ComponentProps as MarkdownComponentProps } from '@ant-design/x-markdown'
 import '@ant-design/x-markdown/dist/x-markdown.css'
 import { Button, Tag, Tooltip } from 'antd'
@@ -59,6 +59,12 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
   const hasToolRoleEvents = useMemo(() => {
     return turn.answerEvents.some(isToolRoleEvent)
+  }, [turn.answerEvents])
+  const isCallingTool = useMemo(() => {
+    return turn.answerEvents.some((event) => {
+      if (event.type !== 'toolCall') return false
+      return event.details?.status === 'in_progress'
+    })
   }, [turn.answerEvents])
   const [overflowToolCards, setOverflowToolCards] = useState<Record<string, boolean>>({})
   const [expandedToolCards, setExpandedToolCards] = useState<Record<string, boolean>>({})
@@ -380,6 +386,10 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
   const bubbleActions = useMemo<MessageAction[]>(() => {
     const actions: MessageAction[] = []
+    if (turn.answerStreaming || turn.answerLoading) {
+      return actions
+    }
+
     if (hasToolCards) {
       return actions
     }
@@ -403,7 +413,15 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
     }
 
     return actions
-  }, [hasToolCards, onCopy, onRegenerate, turn.answerMarkdown, turn.question])
+  }, [
+    hasToolCards,
+    onCopy,
+    onRegenerate,
+    turn.answerLoading,
+    turn.answerMarkdown,
+    turn.answerStreaming,
+    turn.question,
+  ])
 
   const resolveToolIconType = (toolName: string): string => {
     const normalizedToolName = toolName.trim().toLowerCase()
@@ -551,6 +569,22 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
     )
   }
 
+  const renderStreamingThought = () => {
+    if (!turn.answerStreaming) return null
+    return (
+      <ThoughtChain.Item
+        blink
+        variant="text"
+        title={
+          isCallingTool
+            ? (intl.get('dipChatKit.toolCalling').d('Calling tools') as string)
+            : (intl.get('dipChatKit.generating').d('Generating') as string)
+        }
+        description={intl.get('dipChatKit.generatingDesc').d('Please wait...') as string}
+      />
+    )
+  }
+
   return (
     <div className={clsx('AiAnswerBubble', styles.root)}>
       {shouldRenderAnswerBubble && (
@@ -575,7 +609,10 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
             return (
               <>
                 {shouldRenderToolOnlyCards ? (
-                  renderToolCards(true)
+                  <>
+                    {renderToolCards(true)}
+                    {renderStreamingThought()}
+                  </>
                 ) : (
                   <>
                     {!!normalizedContent && (
@@ -584,6 +621,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
                       </XMarkdown>
                     )}
                     {renderToolCards()}
+                    {renderStreamingThought()}
                   </>
                 )}
               </>

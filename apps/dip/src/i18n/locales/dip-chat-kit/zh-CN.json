@@ -60,6 +60,9 @@
     "toolCountText": "{count} 个工具",
     "toolMoreSuffix": "+{count} 个",
     "toolCompleted": "已完成",
-    "toolOutputLabel": "工具输出"
+    "toolOutputLabel": "工具输出",
+    "generating": "正在生成",
+    "generatingDesc": "请稍候...",
+    "toolCalling": "正在调用工具"
   }
 }

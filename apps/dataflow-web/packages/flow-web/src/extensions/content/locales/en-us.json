@@ -45,6 +45,7 @@
   "DocFormatConvert": "Convert File to PDF",
   "DocFormatConvertDescription": "Convert file format to PDF output",
   "DocFormatConvertOutputUrl": "Conversion Result (PDF Download URL)",
+  "DocFormatConvertOutputDocid": "Conversion Result (File ID)",
   "ContentFileParse": "File Parsing",
   "ContentFileParseDescription": "Parse, slice, or vectorize files",
   "ContentFileParseOutputContentList": "Parsing Result (PDF Content List)",

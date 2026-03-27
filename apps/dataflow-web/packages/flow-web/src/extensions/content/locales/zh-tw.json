@@ -45,6 +45,7 @@
   "DocFormatConvert": "文件轉PDF",
   "DocFormatConvertDescription": "將文件格式轉為PDF輸出",
   "DocFormatConvertOutputUrl": "轉換結果（PDF下載地址）",
+  "DocFormatConvertOutputDocid": "轉換結果（文件id）",
   "ContentFileParse": "文件解析",
   "ContentFileParseDescription": "對文件進行解析、切片或向量化",
   "ContentFileParseOutputContentList": "解析結果（PDF 內容列表）",

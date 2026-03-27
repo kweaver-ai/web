@@ -175,6 +175,11 @@ const ContentExtension: Extension = {
               key: ".url",
               type: "string",
             },
+            {
+              name: "DocFormatConvertOutputDocid",
+              key: ".docid",
+              type: "string",
+            },
           ],
           components: {
             Config: DocFormatConvertConfig,
@@ -192,20 +197,20 @@ const ContentExtension: Extension = {
               sliceVector === SliceVectorEnum.None
                 ? []
                 : sliceVector === SliceVectorEnum.Slice
-                ? [
-                    {
-                      name: "ContentFileParseOutputChunksOnlySlice",
-                      key: ".chunks",
-                      type: "array",
-                    },
-                  ]
-                : [
-                    {
-                      name: "ContentFileParseOutputChunksBoth",
-                      key: ".chunks",
-                      type: "array",
-                    },
-                  ];
+                  ? [
+                      {
+                        name: "ContentFileParseOutputChunksOnlySlice",
+                        key: ".chunks",
+                        type: "array",
+                      },
+                    ]
+                  : [
+                      {
+                        name: "ContentFileParseOutputChunksBoth",
+                        key: ".chunks",
+                        type: "array",
+                      },
+                    ];
 
             return [
               {

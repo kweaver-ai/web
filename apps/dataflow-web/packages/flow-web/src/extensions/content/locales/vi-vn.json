@@ -44,6 +44,7 @@
   "DocFormatConvert": "Chuyển đổi định dạng tệp thành PDF",
   "DocFormatConvertDescription": "Chuyển đổi định dạng tệp thành PDF đầu ra",
   "DocFormatConvertOutputUrl": "Kết quả chuyển đổi (địa chỉ tải PDF)",
+  "DocFormatConvertOutputDocid": "Kết quả chuyển đổi (mã tệp)",
   "ContentFileParse": "Phân tích tệp",
   "ContentFileParseDescription": "Phân tích, chia nhỏ hoặc vector hóa tệp",
   "ContentFileParseOutputContentList": "Kết quả phân tích (danh sách nội dung PDF)",

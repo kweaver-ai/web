@@ -2,7 +2,7 @@ import { CloseOutlined, DownloadOutlined } from '@ant-design/icons'
 import { CodeHighlighter } from '@ant-design/x'
 import XMarkdown from '@ant-design/x-markdown'
 import '@ant-design/x-markdown/dist/x-markdown.css'
-import { Avatar, Button, Segmented, Spin, Tooltip, message } from 'antd'
+import { Avatar, Button, message, Segmented, Skeleton, Tooltip } from 'antd'
 import clsx from 'clsx'
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -131,7 +131,8 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
     }
   }, [artifactInfo])
 
-  const canSwitchCodeTab = state.mode === 'html' || state.mode === 'markdown' || state.mode === 'text'
+  const canSwitchCodeTab =
+    state.mode === 'html' || state.mode === 'markdown' || state.mode === 'text'
   const htmlSrcDoc = useMemo(() => {
     if (state.mode !== 'html') return ''
     return injectHtmlPreviewStyle(state.textContent)
@@ -218,9 +219,13 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
           previewMeta.mode === 'markdown' ||
           previewMeta.mode === 'text'
         ) {
-          const response = await getSessionArchiveSubpath(previewMeta.sessionKey, previewMeta.subpath, {
-            responseType: 'text',
-          })
+          const response = await getSessionArchiveSubpath(
+            previewMeta.sessionKey,
+            previewMeta.subpath,
+            {
+              responseType: 'text',
+            },
+          )
           const textContent = typeof response === 'string' ? response : ''
           if (disposed) return
           setState({
@@ -233,9 +238,13 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
           return
         }
 
-        const response = await getSessionArchiveSubpath(previewMeta.sessionKey, previewMeta.subpath, {
-          responseType: 'arraybuffer',
-        })
+        const response = await getSessionArchiveSubpath(
+          previewMeta.sessionKey,
+          previewMeta.subpath,
+          {
+            responseType: 'arraybuffer',
+          },
+        )
         if (!(response instanceof ArrayBuffer)) {
           throw new Error(
             intl.get('dipChatKit.archiveFileTypeMismatch').d('归档文件返回类型异常') as string,
@@ -317,7 +326,9 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
         )
       }
 
-      const blob = new Blob([response], { type: getBlobMimeType(previewMeta.mode, previewMeta.fileName) })
+      const blob = new Blob([response], {
+        type: getBlobMimeType(previewMeta.mode, previewMeta.fileName),
+      })
       const blobUrl = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
       anchor.href = blobUrl
@@ -356,8 +367,17 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
   const renderBody = () => {
     if (state.loading) {
       return (
-        <div className={styles.center}>
-          <Spin />
+        <div className={styles.previewSkeletonWrap}>
+          <div className={styles.previewSkeletonCard}>
+            <Skeleton
+              active
+              title={{ width: '42%' }}
+              paragraph={{
+                rows: 10,
+                width: ['96%', '88%', '100%', '93%', '86%', '98%', '91%', '84%', '95%', '78%'],
+              }}
+            />
+          </div>
         </div>
       )
     }
@@ -411,7 +431,9 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
         <img
           className={styles.imagePreview}
           src={state.blobUrl}
-          alt={previewMeta?.fileName || (intl.get('dipChatKit.artifactImage').d('归档图片') as string)}
+          alt={
+            previewMeta?.fileName || (intl.get('dipChatKit.artifactImage').d('归档图片') as string)
+          }
         />
       )
     }

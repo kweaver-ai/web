@@ -39,6 +39,8 @@ export interface DigitalHuman {
   updated_at?: string
   /** 更新者 */
   updated_by?: string
+  /** 头像 ID */
+  icon_id?: string
 }
 
 export type DigitalHumanList = DigitalHuman[]
@@ -81,6 +83,7 @@ export type CreateDigitalHumanRequest = {
   name: string
   creature?: string
   soul?: string
+  icon_id?: string
 } & DigitalHumanWriteBody
 
 /**

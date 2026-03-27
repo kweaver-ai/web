@@ -4,7 +4,7 @@ import type { CronRunEntry } from '@/apis/dip-studio/plan'
 export const TASKS_SCROLL_THRESHOLD_PX = 80
 
 /** 分页大小 */
-export const TASKS_PAGE_SIZE = 20
+export const TASKS_PAGE_SIZE = 50
 
 export type TasksPanelProps = {
   planId?: string

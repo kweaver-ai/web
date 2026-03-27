@@ -1,13 +1,14 @@
 import { CheckCircleFilled } from '@ant-design/icons'
 import { Spin } from 'antd'
-import { memo, useEffect, useState } from 'react'
+import { throttle } from 'lodash'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { getPlanContent } from '@/apis/dip-studio/plan'
 import Empty from '@/components/Empty'
 import ScrollBarContainer from '@/components/ScrollBarContainer'
 import type { ArchivePreviewState } from '@/components/WorkPlanDetail/Outcome/Preview'
 import { ArchivePreviewPanel } from '@/components/WorkPlanDetail/Outcome/Preview'
 import TaskRunRow from './components/TaskRunRow'
-import type { TasksPanelProps } from './types'
+import { TASKS_SCROLL_THRESHOLD_PX, type TasksPanelProps } from './types'
 import { useTaskRuns } from './useTaskRuns'
 
 const BANNER_DISMISS_KEY = 'dip-work-plan-tasks-plan-banner-dismissed'
@@ -22,9 +23,21 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
     loading: true,
     viewer: 'markdown',
   })
-  const { scrollMountRef, entries, total, initialLoading, loadingMore, loadError } =
-    useTaskRuns(planId)
+  const { entries, total, initialLoading, loadingMore, loadError, loadMore } = useTaskRuns(planId)
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
+
+  const handleListScroll = useMemo(
+    () =>
+      throttle((event: React.UIEvent<HTMLElement>) => {
+        const target = event.currentTarget
+        const { scrollTop, clientHeight, scrollHeight } = target
+        if (scrollHeight - scrollTop - clientHeight > TASKS_SCROLL_THRESHOLD_PX) return
+        loadMore()
+      }, 150),
+    [loadMore],
+  )
+
+  useEffect(() => () => handleListScroll.cancel(), [handleListScroll])
 
   const [bannerDismissed] = useState(() => {
     try {
@@ -110,7 +123,7 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                   aria-hidden
                 />
                 <p className="m-0 min-w-0 flex-1 text-sm leading-[1.57] text-[--dip-text-color]">
-                  这里是我们一起对齐的计划文档，我已经根据我们最近的对话完成了最新校准，您可到【会话】页面随时调整。
+                  这里是我们一起对齐的计划文档，我已经根据我们最近的对话完成了最新校准，您可到【指令】页面随时调整。
                 </p>
                 {/* <button
                   type="button"
@@ -131,18 +144,19 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
         </ScrollBarContainer>
       </div>
 
-      <div
-        ref={scrollMountRef}
-        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[--dip-white]"
-      >
-        <ScrollBarContainer className="flex min-h-0 flex-1 flex-col px-6 py-4 relative">
-          <div className="mx-auto h-full flex w-full max-w-[720px] flex-col gap-5">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[--dip-white]">
+        <ScrollBarContainer
+          onScroll={handleListScroll}
+          className="flex min-h-0 flex-1 flex-col px-6 py-4 relative"
+          style={{ overscrollBehavior: 'contain' }}
+        >
+          <div className="mx-auto flex w-full max-w-[720px] flex-col gap-5 pb-2">
             {initialLoading ? (
-              <div className="inset-0 flex flex-1 items-center justify-center py-20">
+              <div className="inset-0 flex items-center justify-center py-20">
                 <Spin />
               </div>
             ) : loadError && entries.length === 0 ? (
-              <div className="inset-0 h-full flex flex-1 items-center justify-center py-12">
+              <div className="inset-0 flex items-center justify-center py-12">
                 <Empty type="failed" title="加载失败" />
               </div>
             ) : (
@@ -173,16 +187,15 @@ function TasksPanelInner({ planId, dhId, sessionId: _sessionId }: TasksPanelProp
                     })}
                   </div>
                 )}
-
-                {loadingMore ? (
-                  <div className="flex justify-center py-2">
-                    <Spin size="small" />
-                  </div>
-                ) : null}
               </>
             )}
           </div>
         </ScrollBarContainer>
+        {loadingMore ? (
+          <div className="flex shrink-0 justify-center px-6 py-2">
+            <Spin size="small" />
+          </div>
+        ) : null}
       </div>
     </div>
   )

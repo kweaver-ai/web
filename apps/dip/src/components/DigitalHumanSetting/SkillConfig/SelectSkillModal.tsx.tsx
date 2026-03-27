@@ -158,11 +158,32 @@ const SelectSkillModal = ({
       onOk={handleOk}
       onCancel={onCancel}
       width={744}
-      mask={showMask}
-      maskClosable={false}
+      centered
+      mask={{ closable: false, enabled: showMask }}
       destroyOnHidden
       styles={{
-        body: { paddingTop: 8 },
+        container: {
+          maxHeight: '80vh',
+          minHeight: 'min(400px, 80vh)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          padding: '20px 0',
+        },
+        body: {
+          paddingTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        },
+        header: {
+          padding: '0 24px',
+        },
+        footer: {
+          padding: '0 24px',
+        },
       }}
       okText="确定"
       cancelText="取消"
@@ -173,15 +194,16 @@ const SelectSkillModal = ({
         </>
       )}
     >
-      <div className="flex flex-col gap-y-6">
-        <AiPromptInput
-          assignEmployeeValue="__internal_skill_agent__"
-          placeholder={'可以直接输入你想要创建的Skills，也可以直接选择下方的技能'}
-          onSubmit={handleSubmit}
-          autoSize={{ minRows: 2, maxRows: 2 }}
-        />
-
-        <ScrollBarContainer className="grid max-h-[400px] overflow-y-auto relative min-h-[180px] mx-[-24px] px-6">
+      <div className="flex flex-1 min-h-0 flex-col gap-y-6">
+        <div className="px-6">
+          <AiPromptInput
+            assignEmployeeValue="__internal_skill_agent__"
+            placeholder={'可以直接输入你想要创建的Skills，也可以直接选择下方的技能'}
+            onSubmit={handleSubmit}
+            autoSize={{ minRows: 2, maxRows: 2 }}
+          />
+        </div>
+        <ScrollBarContainer className="relative min-h-[180px] flex-1 px-6">
           {renderContent()}
         </ScrollBarContainer>
       </div>

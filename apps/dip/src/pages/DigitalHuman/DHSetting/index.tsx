@@ -85,10 +85,12 @@ const DHSetting = () => {
       const creature = basic.creature?.trim() || undefined
       const soul = basic.soul?.trim() || undefined
 
+      const randomAvatarId = `dh_${Math.floor(Math.random() * 8) + 1}`
       const createBody: CreateDigitalHumanRequest = {
         name,
         ...(creature !== undefined ? { creature } : {}),
         ...(soul !== undefined ? { soul } : {}),
+        icon_id: randomAvatarId,
         skills: skills.map((skill) => skill.name),
         bkn,
         ...(channel !== undefined ? { channel } : {}),

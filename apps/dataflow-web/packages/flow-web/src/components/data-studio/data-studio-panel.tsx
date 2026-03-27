@@ -151,7 +151,6 @@ const DataStudioPanel: React.FC = () => {
 
   const [isCreateModelVisible, setIsCreateModelVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadFileRunLoading, setUploadFileRunLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [getFormTriggerParameters, FormTriggerModalElement] =
     useFormTriggerModal();
@@ -570,7 +569,6 @@ const DataStudioPanel: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
 
-    setUploadFileRunLoading(true);
     try {
       await API.axios.post(
         `${prefixUrl}/api/automation/v2/dataflow-doc/trigger/${dagId}`,
@@ -581,8 +579,6 @@ const DataStudioPanel: React.FC = () => {
       );
     } catch (error: any) {
       handleErr({ error: error?.response });
-    } finally {
-      setUploadFileRunLoading(false);
     }
   };
 
@@ -756,7 +752,6 @@ const DataStudioPanel: React.FC = () => {
                     className={styles["edit-icon"]}
                   />
                 }
-                loading={uploadFileRunLoading}
               >
                 {t("datastudio.button.uploadFileRun", "上传文件运行")}
               </Button>

@@ -161,6 +161,7 @@ const SelectKnowledgeModal = ({
         onOk={handleOk}
         onCancel={onCancel}
         closable
+        centered
         mask={{ closable: false }}
         destroyOnHidden
         width={744}

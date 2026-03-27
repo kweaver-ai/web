@@ -6,11 +6,30 @@ import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useState } from 'react'
 import type { DigitalHuman } from '@/apis'
+import dh1 from '@/assets/icons/avator/dh_1.svg'
+import dh2 from '@/assets/icons/avator/dh_2.svg'
+import dh3 from '@/assets/icons/avator/dh_3.svg'
+import dh4 from '@/assets/icons/avator/dh_4.svg'
+import dh5 from '@/assets/icons/avator/dh_5.svg'
+import dh6 from '@/assets/icons/avator/dh_6.svg'
+import dh7 from '@/assets/icons/avator/dh_7.svg'
+import dh8 from '@/assets/icons/avator/dh_8.svg'
 import AppIcon from '../AppIcon'
 import IconFont from '../IconFont'
 import { cardHeight } from './utils'
 
 echarts.use([ELineChart, GridComponent, TooltipComponent, CanvasRenderer])
+
+const avatarIconMap: Record<string, string> = {
+  dh_1: dh1,
+  dh_2: dh2,
+  dh_3: dh3,
+  dh_4: dh4,
+  dh_5: dh5,
+  dh_6: dh6,
+  dh_7: dh7,
+  dh_8: dh8,
+}
 
 interface EmployeeCardProps {
   digitalHuman: DigitalHuman
@@ -22,6 +41,7 @@ interface EmployeeCardProps {
 
 const EmployeeCard: React.FC<EmployeeCardProps> = ({ digitalHuman, menuItems, onCardClick }) => {
   const [menuOpen, setMenuOpen] = useState(false)
+  const avatarSrc = digitalHuman.icon_id ? avatarIconMap[digitalHuman.icon_id] : undefined
   // const updateTime = digitalHuman.updated_at
   //   ? formatTimeSlash(new Date(digitalHuman.updated_at).getTime())
   //   : ''
@@ -49,12 +69,20 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ digitalHuman, menuItems, on
       <div className="flex gap-4 flex-shrink-0">
         {/* 图标 */}
         <div className="w-12 h-12 flex-shrink-0 flex overflow-hidden mt-0.5">
-          <AppIcon
-            name={digitalHuman.name}
-            size={48}
-            className="w-12 h-12 rounded-xl overflow-hidden"
-            shape="square"
-          />
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt={digitalHuman.name}
+              className="w-12 h-12 rounded-xl overflow-hidden object-cover"
+            />
+          ) : (
+            <AppIcon
+              name={digitalHuman.name}
+              size={48}
+              className="w-12 h-12 rounded-xl overflow-hidden"
+              shape="square"
+            />
+          )}
         </div>
         {/* 名称 + 描述 */}
         <div className="flex-1 min-w-0">

@@ -70,7 +70,7 @@ export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps
       },
       {
         key: 'data-platform',
-        title: '业务知识网络',
+        title: '全局业务知识网络',
         label: (
           <a
             href={ssoUrl}
@@ -78,7 +78,7 @@ export const ExternalLinksMenu = ({ collapsed, roleIds }: ExternalLinksMenuProps
             rel="noopener noreferrer"
             className="flex items-center gap-1 justify-between"
           >
-            <span>业务知识网络</span>
+            <span>全局业务知识网络</span>
             <IconFont type="icon-arrowup" rotate={45} />
           </a>
         ),

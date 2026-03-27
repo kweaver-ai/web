@@ -1,21 +1,20 @@
 import { throttle } from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CronRunListResponse } from '@/apis/dip-studio/plan'
 import { getPlanRuns } from '@/apis/dip-studio/plan'
 import { mockFetchPlanRunsPage, TASKS_USE_MOCK } from './tasksMock'
-import { TASKS_PAGE_SIZE, TASKS_SCROLL_THRESHOLD_PX, type TaskRunDisplayEntry } from './types'
+import { TASKS_PAGE_SIZE, type TaskRunDisplayEntry } from './types'
 
 export type UseTaskRunsResult = {
-  scrollMountRef: React.RefObject<HTMLDivElement>
   entries: TaskRunDisplayEntry[]
   total: number
   initialLoading: boolean
   loadingMore: boolean
   loadError: boolean
+  loadMore: () => void
 }
 
 export function useTaskRuns(planId?: string): UseTaskRunsResult {
-  const scrollMountRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(0)
   const hasMoreRef = useRef(true)
   const isLoadingMoreRef = useRef(false)
@@ -88,47 +87,25 @@ export function useTaskRuns(planId?: string): UseTaskRunsResult {
     void fetchPage(false)
   }, [fetchPage])
 
-  const handleScroll = useMemo(
-    () =>
-      throttle((target: HTMLElement) => {
-        if (!target || isLoadingMoreRef.current || !hasMoreRef.current) return
-        const { scrollTop, clientHeight, scrollHeight } = target
-        if (scrollHeight - scrollTop - clientHeight > TASKS_SCROLL_THRESHOLD_PX) return
-        void fetchPage(true)
-      }, 150),
-    [fetchPage],
+  const loadMore = useCallback(() => {
+    if (isLoadingMoreRef.current || !hasMoreRef.current) return
+    void fetchPage(true)
+  }, [fetchPage])
+
+  const loadMoreThrottled = useRef(
+    throttle(() => {
+      loadMore()
+    }, 150),
   )
 
-  useEffect(() => () => handleScroll.cancel(), [handleScroll])
-
-  useEffect(() => {
-    const root = scrollMountRef.current
-    if (!root) return
-    let cleaned = false
-    let removeListener: (() => void) | undefined
-    const timer = window.setTimeout(() => {
-      if (cleaned) return
-      const viewport =
-        root.querySelector('[data-overlayscrollbars-viewport]') ??
-        root.querySelector('.os-viewport')
-      const el = (viewport as HTMLElement | null) ?? root
-      const onScroll = () => handleScroll(el)
-      el.addEventListener('scroll', onScroll, { passive: true })
-      removeListener = () => el.removeEventListener('scroll', onScroll)
-    }, 0)
-    return () => {
-      cleaned = true
-      window.clearTimeout(timer)
-      removeListener?.()
-    }
-  }, [handleScroll, entries.length])
+  useEffect(() => () => loadMoreThrottled.current.cancel(), [])
 
   return {
-    scrollMountRef,
     entries,
     total,
     initialLoading,
     loadingMore,
     loadError,
+    loadMore: () => loadMoreThrottled.current(),
   }
 }

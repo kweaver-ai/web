@@ -27,11 +27,15 @@ let currentToken: string | null = null
 let requestId = 0 // 用于跟踪当前请求 ID
 
 export const useUserInfoStore = create<UserInfoState>((set) => ({
-  userInfo: {
-    vision_name: 'user',
-    id: '1',
-    account: 'user',
-  },
+  // 开发模式下，用户信息为固定值
+  // 生产模式下，用户信息从后端获取
+  userInfo: import.meta.env.DEV
+    ? {
+        vision_name: 'user',
+        id: '1',
+        account: 'user',
+      }
+    : null,
   isLoading: false,
   isAdmin: import.meta.env.PUBLIC_IS_ADMIN === 'true',
 
@@ -98,7 +102,7 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
           set({
             userInfo,
             isLoading: false,
-            // isAdmin: userInfo.vision_name === 'admin',
+            isAdmin: userInfo.vision_name === 'admin',
           })
         }
       } catch (error) {

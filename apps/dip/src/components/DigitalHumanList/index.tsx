@@ -4,6 +4,7 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import type { DigitalHuman } from '@/apis'
 import ScrollBarContainer from '../ScrollBarContainer'
 import EmployeeCard from './EmployeeCard'
+// import EmployeeCard2 from './EmployeeCard2'
 import { computeColumnCount, gap } from './utils'
 
 interface DigitalHumanListProps {

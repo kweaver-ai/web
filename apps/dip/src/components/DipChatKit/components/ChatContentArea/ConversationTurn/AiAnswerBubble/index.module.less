@@ -11,6 +11,125 @@
 
 .markdownRoot {
   color: #101828;
+  line-height: 22px;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 16px 0 10px;
+    color: #101828;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  h4 {
+    font-size: 16px;
+  }
+
+  h5 {
+    font-size: 14px;
+  }
+
+  h6 {
+    font-size: 13px;
+  }
+
+  h1:first-child,
+  h2:first-child,
+  h3:first-child,
+  h4:first-child,
+  h5:first-child,
+  h6:first-child {
+    margin-top: 0;
+  }
+
+  p {
+    margin: 0 0 10px;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0 0 10px;
+    padding-inline-start: 20px;
+  }
+
+  li + li {
+    margin-top: 2px;
+  }
+
+  pre {
+    margin: 10px 0;
+    overflow: auto;
+    border-radius: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background: #ffffff;
+  }
+
+  th,
+  td {
+    border: 1px solid #d0d5dd;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f2f4f7;
+    color: #344054;
+    font-weight: 500;
+  }
+}
+
+.streamingThought {
+  :global {
+    .ant-thought-chain-item-container {
+      padding-inline: 0 !important;
+    }
+  }
+}
+
+.thinkingBlock {
+  margin-bottom: 8px;
+}
+
+.thinkingMarkdown {
+  color: #475467;
+  font-size: 13px;
+  line-height: 20px;
+
+  :global {
+    p {
+      margin: 0 0 6px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .inlineCode {

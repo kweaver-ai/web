@@ -8,6 +8,9 @@ const TOOL_PREVIEW_MAX_LINES = 2
 const TOOL_PREVIEW_MAX_CHARS = 100
 const TOOL_DETAIL_MAX_LENGTH = 96
 const ARCHIVE_GRID_PLACEHOLDER_NAME = '{ORIGIN_NAME}'
+const THINKING_TYPE = 'thinking'
+const THINKING_TYPE_PATTERN = /"type"\s*:\s*"thinking"/gi
+const THINKING_TAG_PATTERN = /<\s*think(?:ing)?\s*>([\s\S]*?)<\s*\/\s*think(?:ing)?\s*>/gi
 
 export const normalizeMarkdownText = (value: unknown): string => {
   if (isString(value)) return value
@@ -205,6 +208,146 @@ export const buildMarkdownFilePreviewPayload = (
     title: fileName || (intl.get('dipChatKit.markdownFile').d('Markdown file') as string),
     content: sourceContent || fileName || '',
     sourceType: 'text',
+  }
+}
+
+export interface DipChatKitThinkingExtractResult {
+  thinkingText: string
+  answerText: string
+}
+
+const extractThinkingFromTags = (source: string): { thinkingParts: string[]; text: string } => {
+  const thinkingParts: string[] = []
+  const text = source.replace(THINKING_TAG_PATTERN, (_full, content: string) => {
+    const normalizedContent = normalizeMarkdownText(content).trim()
+    if (normalizedContent) {
+      thinkingParts.push(normalizedContent)
+    }
+    return ''
+  })
+
+  return { thinkingParts, text }
+}
+
+const findJsonObjectEndIndex = (text: string, startIndex: number): number => {
+  if (text[startIndex] !== '{') return -1
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+  for (let i = startIndex; i < text.length; i += 1) {
+    const char = text[i]
+
+    if (escaped) {
+      escaped = false
+      continue
+    }
+
+    if (char === '\\') {
+      if (inString) escaped = true
+      continue
+    }
+
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (inString) continue
+
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+
+    if (char === '}') {
+      depth -= 1
+      if (depth === 0) {
+        return i
+      }
+    }
+  }
+
+  return -1
+}
+
+const extractThinkingTextFromJson = (jsonText: string): string => {
+  const parsed = parseJsonRecord(jsonText)
+  if (!parsed) return ''
+  if (normalizeMarkdownText(parsed.type).trim().toLowerCase() !== THINKING_TYPE) {
+    return ''
+  }
+
+  const rawThinking = parsed.thinking
+  if (typeof rawThinking !== 'string') return ''
+  return rawThinking.trim()
+}
+
+const extractThinkingFromJsonObjects = (source: string): { thinkingParts: string[]; text: string } => {
+  const thinkingParts: string[] = []
+  let text = source
+
+  while (true) {
+    THINKING_TYPE_PATTERN.lastIndex = 0
+    const typeMatch = THINKING_TYPE_PATTERN.exec(text)
+    if (!typeMatch) break
+
+    const typeIndex = typeMatch.index
+    let objectStart = text.lastIndexOf('{', typeIndex)
+    let handled = false
+
+    while (objectStart >= 0) {
+      const objectEnd = findJsonObjectEndIndex(text, objectStart)
+      if (objectEnd < 0) break
+
+      if (objectEnd < typeIndex) {
+        objectStart = text.lastIndexOf('{', objectStart - 1)
+        continue
+      }
+
+      const jsonText = text.slice(objectStart, objectEnd + 1)
+      const thinkingText = extractThinkingTextFromJson(jsonText)
+      if (thinkingText) {
+        thinkingParts.push(thinkingText)
+        text = `${text.slice(0, objectStart)}${text.slice(objectEnd + 1)}`
+        handled = true
+        break
+      }
+
+      objectStart = text.lastIndexOf('{', objectStart - 1)
+    }
+
+    if (!handled) {
+      break
+    }
+  }
+
+  return { thinkingParts, text }
+}
+
+const normalizeAnswerText = (text: string): string => {
+  return text.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
+}
+
+export const extractThinkingContent = (source: string): DipChatKitThinkingExtractResult => {
+  if (!source) {
+    return {
+      thinkingText: '',
+      answerText: '',
+    }
+  }
+
+  const fromTags = extractThinkingFromTags(source)
+  const fromJson = extractThinkingFromJsonObjects(fromTags.text)
+
+  const thinkingText = [...fromTags.thinkingParts, ...fromJson.thinkingParts]
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .join('\n\n')
+
+  return {
+    thinkingText,
+    answerText: normalizeAnswerText(fromJson.text),
   }
 }
 

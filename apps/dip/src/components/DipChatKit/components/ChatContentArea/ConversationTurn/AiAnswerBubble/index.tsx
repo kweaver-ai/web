@@ -5,7 +5,7 @@ import {
   RedoOutlined,
   UpOutlined,
 } from '@ant-design/icons'
-import { Bubble, CodeHighlighter, Mermaid, ThoughtChain } from '@ant-design/x'
+import { Bubble, CodeHighlighter, Mermaid, Think, ThoughtChain } from '@ant-design/x'
 import XMarkdown, { type ComponentProps as MarkdownComponentProps } from '@ant-design/x-markdown'
 import '@ant-design/x-markdown/dist/x-markdown.css'
 import { Button, Tag, Tooltip } from 'antd'
@@ -26,6 +26,7 @@ import {
   buildCodePreviewPayload,
   buildMarkdownFilePreviewPayload,
   buildToolCardItems,
+  extractThinkingContent,
   extractMarkdownFileNameFromHref,
   getDomDataAttributes,
   isMermaidLanguage,
@@ -509,6 +510,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
     if (!turn.answerStreaming) return null
     return (
       <ThoughtChain.Item
+        className={styles.streamingThought}
         blink
         variant="text"
         title={
@@ -540,6 +542,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
           }}
           contentRender={(content) => {
             const normalizedContent = normalizeMarkdownText(content)
+            const { thinkingText, answerText } = extractThinkingContent(normalizedContent)
             const shouldRenderToolOnlyCards = hasToolCards && hasToolRoleEvents
 
             return (
@@ -551,9 +554,21 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
                   </>
                 ) : (
                   <>
-                    {!!normalizedContent && (
+                    {!!thinkingText && (
+                      <Think
+                        className={styles.thinkingBlock}
+                        title={intl.get('dipChatKit.thinkingTitle').d('思考过程') as string}
+                        blink={turn.answerStreaming}
+                        defaultExpanded={false}
+                      >
+                        <XMarkdown className={styles.thinkingMarkdown} components={markdownComponents}>
+                          {thinkingText}
+                        </XMarkdown>
+                      </Think>
+                    )}
+                    {!!answerText && (
                       <XMarkdown className={styles.markdownRoot} components={markdownComponents}>
-                        {normalizedContent}
+                        {answerText}
                       </XMarkdown>
                     )}
                     {renderToolCards()}

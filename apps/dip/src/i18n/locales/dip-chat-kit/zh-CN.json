@@ -63,6 +63,7 @@
     "toolOutputLabel": "工具输出",
     "generating": "正在生成",
     "generatingDesc": "请稍候...",
-    "toolCalling": "正在调用工具"
+    "toolCalling": "正在调用工具",
+    "thinkingTitle": "思考过程"
   }
 }

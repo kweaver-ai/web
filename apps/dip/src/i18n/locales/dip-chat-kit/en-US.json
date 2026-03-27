@@ -63,6 +63,7 @@
     "toolOutputLabel": "Tool output",
     "generating": "Generating",
     "generatingDesc": "Please wait...",
-    "toolCalling": "Calling tools"
+    "toolCalling": "Calling tools",
+    "thinkingTitle": "Reasoning"
   }
 }

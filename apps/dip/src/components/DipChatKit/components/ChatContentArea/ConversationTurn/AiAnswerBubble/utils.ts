@@ -8,6 +8,7 @@ const TOOL_INLINE_THRESHOLD = 80
 const TOOL_PREVIEW_MAX_LINES = 2
 const TOOL_PREVIEW_MAX_CHARS = 100
 const TOOL_DETAIL_MAX_LENGTH = 96
+const ARCHIVE_GRID_PLACEHOLDER_NAME = '{ORIGIN_NAME}'
 
 export const normalizeMarkdownText = (value: unknown): string => {
   if (isString(value)) return value
@@ -120,6 +121,11 @@ export const buildArchiveGridPreviewPayload = (
 
   const data = readRecordField(parsed, 'data')
   if (!data) return null
+
+  const dataName = toTextFromUnknown(data.name).trim()
+  if (dataName === ARCHIVE_GRID_PLACEHOLDER_NAME) {
+    return null
+  }
 
   const normalizedSubpath = normalizeArchiveSubpath(data.subpath, data.archive_root)
   if (!normalizedSubpath) return null

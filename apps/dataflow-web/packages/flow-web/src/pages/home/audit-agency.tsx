@@ -2,7 +2,10 @@ import { useContext, useEffect, useRef } from "react";
 import { MicroAppContext } from "@applet/common";
 import { cloneDeep } from "lodash";
 // @ts-ignore
-import { apis, components } from '@aishu-tech/components/dist/dip-components.full.js';
+import {
+  apis,
+  components,
+} from "@aishu-tech/components/dist/dip-components.full.js";
 
 export default function AuditAgency({}) {
   const { microWidgetProps } = useContext(MicroAppContext);
@@ -12,16 +15,8 @@ export default function AuditAgency({}) {
   useEffect(() => {
     const flowConfig = microWidgetProps?.config?.getMicroWidgetByName(
       "doc-audit-client",
-      true
+      true,
     );
-
-    const microWidgetPropsNew = cloneDeep(microWidgetProps)
-    microWidgetPropsNew.history.getBasePath = microWidgetProps.history.getBasePath + "/doc-audit-client"
-    microWidgetPropsNew.config.systemInfo.realLocation = microWidgetProps.config.systemInfo.location
-    microWidgetPropsNew.contextMenu = {
-      addAccessorFn: apis,
-      components
-    }
 
     setTimeout(() => {
       microApp.current = microWidgetProps?._qiankun?.loadMicroApp({
@@ -30,9 +25,27 @@ export default function AuditAgency({}) {
         container: widgetElement.current,
         activeRule: "/doc-audit-client", // 设置路由前缀
         props: {
-          applicationType: 'automation', // applicationType 申请类型参数
-          microWidgetProps: microWidgetPropsNew,
-          systemType: 'adp'
+          applicationType: "automation", // applicationType 申请类型参数
+          microWidgetProps: {
+            ...microWidgetProps,
+            history: {
+              ...microWidgetProps.history,
+              getBasePath:
+                microWidgetProps.history.getBasePath + "/doc-audit-client",
+            },
+            config: {
+              ...microWidgetProps.config,
+              systemInfo: {
+                ...microWidgetProps.config.systemInfo,
+                realLocation: microWidgetProps.config.systemInfo.location,
+              },
+            },
+            contextMenu: {
+              addAccessorFn: apis,
+              components,
+            },
+          },
+          systemType: "adp",
         },
       });
     }, 10);

@@ -12,30 +12,29 @@ import AuditTemplate from "./audit-template";
 import AuditAgency from "./audit-agency";
 
 export const Home = () => {
-    // 获取插件开关状态
-    const { config } = useContext(ServiceConfigContext);
-    const navigate = useNavigate();
+  // 获取插件开关状态
+  const { config } = useContext(ServiceConfigContext);
+  const navigate = useNavigate();
 
-    if (config.isServiceOpen === false) {
-        navigate("/disable");
-    }
+  if (config.isServiceOpen === false) {
+    navigate("/disable");
+  }
 
-    return (
-        <div className={styles["layout"]}>
-            <HeadNavigation />
-            <div className={styles["container"]}>
-                <Routes>
-                    <Route path="/list" element={<TaskList />} />
-                    <Route path="/template" element={<TemplateList />} />
-                    <Route path="/model" element={<ModelPanel />} />
-                    <Route path="/model/*" element={<ModelPanel />} />
-                    <Route path="/executors" element={<Executors />} />
-                    <Route path="/auditTemplate" element={<AuditTemplate />}></Route>
-                    <Route path="/doc-audit-client" element={<AuditAgency />}></Route>
-                    {/* <Route path="/doc-audit-client/*" element={<AuditAgency />}></Route> */}
-                    <Route path="*" element={<TaskList />} />
-                </Routes>
-            </div>
-        </div>
-    );
+  return (
+    <div className={styles["layout"]}>
+      <HeadNavigation />
+      <div className={styles["container"]}>
+        <Routes>
+          <Route path="/list" element={<TaskList />} />
+          <Route path="/template" element={<TemplateList />} />
+          <Route path="/model" element={<ModelPanel />} />
+          <Route path="/model/*" element={<ModelPanel />} />
+          <Route path="/executors" element={<Executors />} />
+          <Route path="/auditTemplate" element={<AuditTemplate />}></Route>
+          <Route path="/doc-audit-client" element={<AuditAgency />}></Route>
+          <Route path="*" element={<TaskList />} />
+        </Routes>
+      </div>
+    </div>
+  );
 };

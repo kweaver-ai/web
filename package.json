@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "turbo run dev --parallel",
+    "dev:dip": "pnpm --filter @kweaver-web/dip dev",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",

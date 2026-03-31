@@ -856,7 +856,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
             </div>
           </div>
         )}
-        {selectedRowKeys.length === 0 && (
+        {selectedRowKeys.length === 0 && dataList.length > 0 && (
           <div className={styles['multi-detail-placeholder']}>
             <div className={styles['multi-detail-body']}>
               <div className={styles['multi-detail-empty']}>{t('common.selectOneApply')}</div>

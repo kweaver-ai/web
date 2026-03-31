@@ -57,6 +57,7 @@
     "searches": "Search",
     "selectNum": "{num} item(s) selected",
     "selectApply": "{num} request(s) selected",
+    "selectOneApply": "Please select one request",
     "noDetail": "No details for now",
     "surePass": "Are you sure to approve the selected one(s)?",
     "sureReject": "Are you sure to reject the selected one(s)?",

@@ -59,6 +59,7 @@
     "searches": "搜索申请内容、发起人",
     "selectNum": "已选中 {num} 项",
     "selectApply": "已选中 {num} 条申请",
+    "selectOneApply": "请选择一条申请",
     "noDetail": "暂无详情",
     "surePass": "确定同意选中的 {num} 个申请吗？",
     "sureReject": "确定拒绝选中的 {num} 个申请吗？",

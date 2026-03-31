@@ -11,14 +11,13 @@ import {
   fetchAuthority,
   audit,
 } from '@/api/doc-audit-rest';
-import { processCategory } from '@/api/workflow-rest';
 import { getBatchUserAvatars } from '@/api/user-management';
 import { useDictStore, useAppStore } from '@/store';
 import { FileIcon, MultiChoice } from '@/components';
 import { toDateString } from '@/utils/date';
 import { getBizTypeColumnText } from '@/utils/biz-type';
 import AuditDetail from '../AuditDetail';
-import type { AuditRecord, DictItem, QueryParams } from '@/types';
+import type { AuditRecord, QueryParams } from '@/types';
 import { AuditListMode } from '../types';
 import { collectAuditTypesFromBizTypes, transformTypeParam } from '../utils';
 import type { AuditListProps, ListRecord, StatusFilter } from './types';
@@ -63,7 +62,7 @@ function getApplyFirstAuditorId(record: ListRecord) {
 
 const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
   const dictList = useDictStore(s => s.dictList);
-  const { context, lang, microWidgetProps } = useAppStore();
+  const { context, lang } = useAppStore();
   const isTodo = mode === AuditListMode.Todo;
   const isDone = mode === AuditListMode.Done;
   const isApply = mode === AuditListMode.Apply;
@@ -71,7 +70,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
   const [loading, setLoading] = useState(true);
   const [dataList, setDataList] = useState<ListRecord[]>([]);
   const [selectedRows, setSelectedRows] = useState<ListRecord[]>([]);
-  const [currentId, setCurrentId] = useState<string>('');
   const [userAvatars, setUserAvatars] = useState<Record<string, string>>({});
   const [tableHeight, setTableHeight] = useState(300);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -82,7 +80,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
     pageSize: 50,
     total: 0,
   });
-  const [applyType, setApplyType] = useState<string[]>(['']);
+  const [applyType, setApplyType] = useState<string[]>(context?.applicationType ? [context.applicationType] : ['']);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('');
   const [searchValue, setSearchValue] = useState<Array<{ type: string; val: string }>>([]);
   const [batchModalOpen, setBatchModalOpen] = useState(false);
@@ -93,64 +91,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
   const [batchProgress, setBatchProgress] = useState(0);
   const [batchCommentRequired, setBatchCommentRequired] = useState(false);
 
-  const initProcessCategory = useCallback(async () => {
-    if (dictList.bizTypes.length > 3) return;
-    const tenantId = context?.tenantId || '';
-
-    const baseBizTypes = dictList.bizTypes
-      .filter(bizTypeItem => {
-        if (tenantId === 'af_workflow') {
-          return bizTypeItem.value === '';
-        }
-        if (bizTypeItem.value === '') return true;
-        return false;
-      })
-      .map(item => {
-        if (item.value !== 'share') return { ...item };
-        let nextChildren = item.children ? [...item.children] : [];
-        nextChildren = nextChildren.filter(i => !['realname', 'anonymous'].includes(i.value));
-        return { ...item, children: nextChildren };
-      });
-
-    try {
-      const processCategoryList = (await processCategory(context?.tenantId)) as Array<{
-        audit_type?: string;
-        entry?: string;
-        name?: string;
-        resubmit?: unknown;
-        label?: Record<string, string>;
-      }>;
-      const nextBizTypes = [...baseBizTypes];
-      processCategoryList.forEach(item => {
-        if (
-          !item ||
-          typeof item.audit_type !== 'string' ||
-          ['perm', 'owner', 'inherit', 'anonymous'].includes(item.audit_type)
-        ) {
-          return;
-        }
-        const alreadyExists = nextBizTypes.some(bizType => bizType.value === item.audit_type);
-        if (alreadyExists) return;
-        const labelFromI18n =
-          item.label?.[lang] ?? item.label?.[lang.replace('_', '-')] ?? item.label?.['zh-cn'] ?? item.audit_type;
-        nextBizTypes.push({
-          label: `${labelFromI18n}${t('common.column.apply')}`,
-          value: item.audit_type,
-          entry: item.entry,
-          name: item.name,
-          resubmit: item.resubmit,
-        } as DictItem);
-      });
-      useDictStore.setState(state => ({
-        dictList: {
-          ...state.dictList,
-          bizTypes: nextBizTypes,
-        },
-      }));
-    } catch (error) {
-      console.error('Failed to init process category:', error);
-    }
-  }, [context?.tenantId, dictList.bizTypes, lang, microWidgetProps]);
+  const currentId = useMemo(() => (selectedRows.length === 1 ? selectedRows[0]?.id || '' : ''), [selectedRows]);
 
   const searchTypes = isApply
     ? [{ label: t('common.column.abstract'), value: 'abstracts' }]
@@ -263,32 +204,27 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
 
         // 对齐 Vue applyList：reload 时优先保留当前选中项，且使用最新 entries 中的数据对象。
         const keepCurrentId = options?.keepCurrentId;
-        if ((isTodo || isDone || isApply) && entries.length > 0) {
+        if (entries.length > 0) {
           if (isTodo) {
             const applyIdFromUrl = new URLSearchParams(window.location.search).get('applyId');
             if (applyIdFromUrl) {
               const found = entries.find(item => item.id === applyIdFromUrl);
               if (found) {
-                setCurrentId(found.id);
                 setSelectedRows([found]);
               } else {
-                setCurrentId(entries[0].id);
                 setSelectedRows([entries[0]]);
               }
             } else {
               const found = keepCurrentId ? entries.find(item => item.id === keepCurrentId) : undefined;
               const nextRow = found || entries[0];
-              setCurrentId(nextRow.id);
               setSelectedRows([nextRow]);
             }
           } else {
             const found = keepCurrentId ? entries.find(item => item.id === keepCurrentId) : undefined;
             const nextRow = found || entries[0];
-            setCurrentId(nextRow.id);
             setSelectedRows([nextRow]);
           }
-        } else if (isTodo || isDone || isApply) {
-          setCurrentId('');
+        } else {
           setSelectedRows([]);
         }
       } catch (error) {
@@ -310,15 +246,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
       dictList.bizTypes,
     ]
   );
-
-  useEffect(() => {
-    void initProcessCategory();
-  }, [initProcessCategory]);
-
-  useEffect(() => {
-    if (!context?.applicationType || (!isTodo && !isDone)) return;
-    setApplyType([context.applicationType]);
-  }, [context?.applicationType, isTodo, isDone]);
 
   useEffect(() => {
     void fetchData();
@@ -508,7 +435,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
       title: t('common.column.abstract'),
       dataIndex: 'abstract',
       key: 'abstract',
-      width: isDone ? '16.66%' : undefined,
       ellipsis: true,
       render: (_: unknown, record: ListRecord) => {
         const text = getAbstractText(record);
@@ -544,7 +470,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.bizType'),
           dataIndex: 'biz_type',
           key: 'biz_type',
-          width: '16.66%',
           ellipsis: true,
           render: (_: unknown, r: ListRecord) => getBizTypeText(r),
         },
@@ -553,7 +478,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.applyUserName'),
           dataIndex: 'apply_user_name',
           key: 'apply_user_name',
-          width: '16.66%',
           ellipsis: true,
           render: (text: string, r: ListRecord) => (
             <div className={styles['user-cell']}>
@@ -574,7 +498,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.processTime'),
           dataIndex: 'end_time',
           key: 'end_time',
-          width: '16.66%',
           ellipsis: true,
           render: (text: string) => toDateString(text),
         },
@@ -582,7 +505,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.auditor'),
           dataIndex: 'last_auditor',
           key: 'last_auditor',
-          width: '16.66%',
           ellipsis: true,
           render: (text: string, r: ListRecord) =>
             text ? (
@@ -604,7 +526,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.status'),
           dataIndex: 'audit_status',
           key: 'audit_status',
-          width: '16.66%',
           ellipsis: true,
           render: (s: string) => (
             <span title={s === 'pending' ? t('common.auditStatuss.pending-done') : t(`common.auditStatuss.${s}`) || s}>
@@ -621,19 +542,16 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.bizType'),
           dataIndex: 'biz_type',
           key: 'biz_type',
-          width: '25%',
           ellipsis: true,
           render: (_: unknown, r: ListRecord) => getBizTypeText(r),
         },
         {
           ...abstractCol,
-          width: '25%',
         },
         {
           title: t('common.column.auditor'),
           dataIndex: 'last_auditor',
           key: 'last_auditor',
-          width: '25%',
           ellipsis: true,
           render: (_: string, r: ListRecord) => {
             if (r.result === 'avoid' || r.audit_status === 'avoid') {
@@ -664,7 +582,6 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.auditStatus'),
           dataIndex: 'audit_status',
           key: 'audit_status',
-          width: '25%',
           ellipsis: true,
           render: (status: string) => (
             <span title={t(`common.auditStatuss.${status}`) || status}>
@@ -730,21 +647,18 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
           title: t('common.column.auditStatus'),
           dataIndex: 'audit_status',
           key: 'audit_status',
-          width: 100,
           render: status => <span>{t(`common.auditStatuss.${status}`) || status}</span>,
         },
         {
           title: t('common.column.applyTime'),
           dataIndex: 'apply_time',
           key: 'apply_time',
-          width: 140,
           ellipsis: true,
           render: (text: string) => toDateString(text),
         },
         {
           title: t('common.operation.name'),
           key: 'operation',
-          width: 100,
           render: (_, record) =>
             record.audit_status === 'pending' ? (
               <Button type="link" size="small" onClick={() => handleCancel(record)}>
@@ -870,7 +784,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
                 </div>
               ),
             }}
-            tableLayout={isDone || isApply ? 'fixed' : undefined}
+            tableLayout="fixed"
             scroll={{
               y: tableHeight,
             }}
@@ -879,24 +793,14 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
                 ? {
                     selectedRowKeys,
                     onChange: (_, rows) => {
-                      if (rows.length > 0) {
-                        setSelectedRows(rows as ListRecord[]);
-                        return;
-                      }
-                      if (dataList.length > 0) {
-                        setSelectedRows([dataList[0]]);
-                        setCurrentId(dataList[0].id);
-                      }
+                      setSelectedRows(rows);
                     },
                   }
                 : undefined
             }
             onRow={record => ({
               onClick: () => {
-                if (isTodo || isDone || isApply) {
-                  setCurrentId(record.id);
-                  setSelectedRows([record]);
-                }
+                setSelectedRows([record]);
               },
               className: record.id === currentId ? styles['row-active'] : '',
             })}
@@ -914,7 +818,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
             }}
           />
         </div>
-        {isTodo && currentId && dataList.length > 0 && selectedRows.length <= 1 && (
+        {isTodo && currentId && (
           <div className={styles['detail-wrapper']}>
             <AuditDetail
               id={currentId}
@@ -934,7 +838,14 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
             </div>
           </div>
         )}
-        {isDone && currentId && dataList.length > 0 && (
+        {selectedRowKeys.length === 0 && (
+          <div className={styles['multi-detail-placeholder']}>
+            <div className={styles['multi-detail-body']}>
+              <div className={styles['multi-detail-empty']}>{t('common.selectOneApply')}</div>
+            </div>
+          </div>
+        )}
+        {isDone && currentId && (
           <div className={styles['detail-wrapper']}>
             <AuditDetail
               id={currentId}
@@ -944,7 +855,7 @@ const AuditList: React.FC<AuditListProps> = ({ mode, onRefresh }) => {
             />
           </div>
         )}
-        {isApply && currentId && dataList.length > 0 && (
+        {isApply && currentId && (
           <div className={styles['detail-wrapper']}>
             <AuditDetail
               id={currentId}

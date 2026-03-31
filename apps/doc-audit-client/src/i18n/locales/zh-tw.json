@@ -57,6 +57,7 @@
     "searches": "搜索申請內容、發起人",
     "selectNum": "已選中 {num} 項",
     "selectApply": "已選中 {num} 條申請",
+    "selectOneApply": "請選擇一條申請",
     "noDetail": "暫無詳情",
     "surePass": "確定同意選中的 {num} 個申請嗎？",
     "sureReject": "確定拒絕選中的 {num} 個申請嗎？",

@@ -50,9 +50,9 @@ const StoreSider = ({ collapsed, onCollapse }: StoreSiderProps) => {
   )
 
   const handleUnpin = useCallback(
-    async (appId: number) => {
+    async (appkey: string) => {
       try {
-        await unpinMicroApp(appId)
+        await unpinMicroApp(appkey)
         messageApi.success('已取消钉住')
       } catch (error) {
         console.error('Failed to unpin micro app:', error)
@@ -124,7 +124,7 @@ const StoreSider = ({ collapsed, onCollapse }: StoreSiderProps) => {
 
     // 2. 钉住的应用（显示在 MyApp 下面，排除问数，避免重复）
     pinnedMicroApps
-      .filter((app) => app.id !== wenshuAppInfo?.id)
+      .filter((app) => app.key !== wenshuAppInfo?.key)
       .forEach((app) => {
         items.push({
           key: `micro-app-${app.key}`,
@@ -136,7 +136,7 @@ const StoreSider = ({ collapsed, onCollapse }: StoreSiderProps) => {
                   className="w-6 h-6 text-base flex items-center justify-center rounded text-[var(--dip-warning-color)] pin-icon opacity-0 hover:bg-[rgba(0,0,0,0.04)]"
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleUnpin(app.id)
+                    handleUnpin(app.key)
                   }}
                 />
               </Popover>

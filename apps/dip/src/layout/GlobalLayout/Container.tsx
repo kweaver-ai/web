@@ -36,10 +36,10 @@ const Container = ({ children }: ContainerProps) => {
 
   // 特殊处理：问数应用没有导航头，有侧边栏
   // 1. 优先通过当前微应用的 key 判断（兼容直接刷新 /application/:appKey 的场景）
-  // 2. 兼容通过 store 中缓存的 wenshuAppInfo.id 判断（兼容从首页/登录跳转的场景）
+  // 2. 兼容通过 store 中缓存的 wenshuAppInfo.key 判断（兼容从首页/登录跳转的场景）
   // const isWenshuByKey = currentMicroApp?.key === WENSHU_APP_KEY
-  // const isWenshuById = wenshuAppInfo?.id === Number(params?.appId)
-  // const isWenshuApp = isWenshuByKey || isWenshuById
+  // const isWenshuByStoreKey = wenshuAppInfo?.key === params?.appKey
+  // const isWenshuApp = isWenshuByKey || isWenshuByStoreKey
   const isWenshuApp = false
 
   // 布局决策：

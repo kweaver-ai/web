@@ -10,7 +10,7 @@ export const getMyAppMenuItems = (
   onMenuClick: (key: MyAppActionEnum) => void,
 ): MenuProps['items'] => {
   const { isPinned } = usePreferenceStore.getState()
-  const pinned = isPinned(app.id)
+  const pinned = isPinned(app.key)
 
   if (pinned) {
     return [
@@ -37,7 +37,7 @@ export const getMyAppMoreBtn = (
   onMenuClick: (key: MyAppActionEnum) => void,
 ) => {
   const { isPinned } = usePreferenceStore.getState()
-  const pinned = isPinned(app.id)
+  const pinned = isPinned(app.key)
   if (pinned) {
     return (
       <Popover content="取消固定">

@@ -95,7 +95,7 @@ const AppList: React.FC<AppListProps> = ({
   const renderCard = useCallback(
     (app: ApplicationInfo, width: number) => {
       return (
-        <Col key={app.id} style={{ width, minWidth: width }}>
+        <Col key={app.key} style={{ width, minWidth: width }}>
           <AppCard
             app={app}
             mode={mode}

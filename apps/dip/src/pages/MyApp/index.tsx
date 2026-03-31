@@ -56,14 +56,14 @@ const MyApp = () => {
     async (action: string, _app: ApplicationInfo) => {
       switch (action) {
         case MyAppActionEnum.Fix: {
-          const result = await togglePin(_app.id)
+          const result = await togglePin(_app.key)
           if (result) {
             updateApp({ ..._app, pinned: true })
           }
           break
         }
         case MyAppActionEnum.Unfix: {
-          const result = await togglePin(_app.id)
+          const result = await togglePin(_app.key)
           if (result) {
             updateApp({ ..._app, pinned: false })
           }

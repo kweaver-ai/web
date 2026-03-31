@@ -57,7 +57,7 @@ const MicroAppHeader = () => {
     // 微应用根节点：应用图标 + 名称
     if (currentMicroApp) {
       items.push({
-        key: currentMicroApp.id.toString(),
+        key: currentMicroApp.key,
         name: currentMicroApp.name,
         path: removeBasePath(currentMicroApp.routeBasename),
         icon: currentMicroApp.icon,

@@ -81,10 +81,10 @@ const AppStore = () => {
               ),
               onOk: async () => {
                 try {
-                  await deleteApplications(_app.id)
+                  await deleteApplications(_app.key)
                   messageApi.success('卸载成功')
                   handleRefresh()
-                  unpinMicroApp(_app.id, false)
+                  unpinMicroApp(_app.key, false)
                 } catch (err: any) {
                   if (err?.description) {
                     messageApi.error(err.description)

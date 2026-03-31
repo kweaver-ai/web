@@ -36,7 +36,7 @@ export const useApplicationsService = (options: UseApplicationsServiceOptions = 
 
   const updateApp = useCallback(
     (newApp: ApplicationInfo) => {
-      setApps((prevApps) => prevApps.map((app) => (app.id === newApp?.id ? newApp : app)))
+      setApps((prevApps) => prevApps.map((app) => (app.key === newApp?.key ? newApp : app)))
     },
     [setApps],
   )

@@ -76,18 +76,18 @@ export const getApplicationsAgents = (appkey: string): Promise<AgentInfo[]> => {
 
 /**
  * 卸载应用
- * @param key 应用唯一标识
+ * @param appkey 应用包唯一标识
  */
-export const deleteApplications = (id: number): Promise<void> => {
-  return del(`/api/dip-hub/v1/applications/${id}`)
+export const deleteApplications = (appkey: string): Promise<void> => {
+  return del(`/api/dip-hub/v1/applications/${encodeURIComponent(appkey)}`)
 }
 
 /**
  * 钉住/取消钉住微应用
  */
 export async function pinMicroAppApi(params: PinMicroAppParams): Promise<ApplicationInfo> {
-  const { appId, pinned } = params
-  return put(`/api/dip-hub/v1/applications/${appId}/pinned`, {
+  const { appkey, pinned } = params
+  return put(`/api/dip-hub/v1/applications/${encodeURIComponent(appkey)}/pinned`, {
     body: JSON.stringify({ pinned }),
   })
 }

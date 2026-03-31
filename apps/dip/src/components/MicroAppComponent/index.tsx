@@ -72,6 +72,7 @@ const MicroAppComponent = ({ appBasicInfo, homeRoute }: MicroAppComponentProps) 
       application: {
         // 应用信息在微应用加载时确定，不会在运行时变化
         id: appBasicInfo.id,
+        key: appBasicInfo.key,
         name: appBasicInfo.name,
         icon: appBasicInfo.icon || '',
       },

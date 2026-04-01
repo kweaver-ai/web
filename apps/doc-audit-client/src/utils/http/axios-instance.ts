@@ -15,9 +15,15 @@ axiosInstance.interceptors.response.use(
       try {
         if (!isRefreshing) {
           isRefreshing = true;
-
           const token = await config.refreshToken();
-          const newToken = token ? token.access_token : config.getToken();
+          let newToken = '';
+          if (token?.accessToken) {
+            // 找数问数场景, 新token从accessToken中获取，不能通过getToken()获取
+            newToken = token.accessToken;
+            setConfig({ getToken: () => newToken });
+          } else {
+            newToken = config.getToken();
+          }
 
           if (newToken) {
             requests.forEach(cb => cb(newToken));

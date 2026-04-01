@@ -11,7 +11,7 @@ export interface ConfigType {
   lang: LangType;
   prefix: string;
   getToken: () => string;
-  refreshToken?: () => Promise<{ access_token: string }>;
+  refreshToken?: () => Promise<{ access_token?: string; accessToken?: string }>;
   onTokenExpired?: (code?: number) => void;
   businessDomainID: string;
 }

@@ -43,6 +43,7 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
   const {
     dipChatKitStore: { messageTurns, scroll },
     setDipChatKitStore,
+    getDipChatKitStore,
     appendQuestionTurn,
     setTurnSessionKey,
     startAnswerStream,
@@ -528,10 +529,13 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
         setShowBackToBottom(false)
         return
       }
-      setAutoScrollEnabled(false)
       setShowBackToBottom(true)
+      const isStreamingNow = getDipChatKitStore().messageTurns.some((turn) => turn.answerStreaming)
+      if (!isStreamingNow) {
+        setAutoScrollEnabled(false)
+      }
     },
-    [setAutoScrollEnabled, setShowBackToBottom],
+    [getDipChatKitStore, setAutoScrollEnabled, setShowBackToBottom],
   )
 
   return (
@@ -568,11 +572,13 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
                 {intl.get('dipChatKit.emptyState').d('请输入问题开始对话。')}
               </div>
             )}
-            {messageTurns.map((turn) => {
+            {messageTurns.map((turn, index) => {
+              const isLatestAnswerTurn = index === messageTurns.length - 1
               return (
                 <ConversationTurn
                   key={turn.id}
                   turn={turn}
+                  isLatestAnswerTurn={isLatestAnswerTurn}
                   onEditQuestion={handleEditQuestion}
                   onCopyQuestion={handleCopyQuestion}
                   onCopyAnswer={handleCopyAnswer}

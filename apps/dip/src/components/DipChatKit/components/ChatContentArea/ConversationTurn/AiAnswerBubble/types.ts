@@ -2,6 +2,7 @@ import type { DipChatKitMessageTurn, DipChatKitPreviewPayload } from '../../../.
 
 export interface AiAnswerBubbleProps {
   turn: DipChatKitMessageTurn
+  isLatestAnswerTurn: boolean
   onCopy: () => void
   onRegenerate: () => void
   onOpenPreview: (payload: DipChatKitPreviewPayload) => void

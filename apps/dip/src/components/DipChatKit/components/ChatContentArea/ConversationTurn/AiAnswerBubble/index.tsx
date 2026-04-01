@@ -318,6 +318,7 @@ const isToolCardStateEqual = (
 
 const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
   turn,
+  isLatestAnswerTurn,
   onCopy,
   onRegenerate,
   onOpenPreview,
@@ -594,15 +595,12 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
   const bubbleActions = useMemo<MessageAction[]>(() => {
     const actions: MessageAction[] = []
+    const hasAnswerText = Boolean(turn.answerMarkdown.trim())
     if (turn.answerStreaming || turn.answerLoading) {
       return actions
     }
 
-    if (hasToolCards) {
-      return actions
-    }
-
-    if (turn.answerMarkdown.trim()) {
+    if (hasAnswerText) {
       actions.push({
         key: 'copy-answer',
         title: intl.get('dipChatKit.copyAnswer').d('Copy answer') as string,
@@ -611,7 +609,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
       })
     }
 
-    if (turn.question.trim()) {
+    if (isLatestAnswerTurn && turn.question.trim()) {
       actions.push({
         key: 'regenerate-answer',
         title: intl.get('dipChatKit.regenerateAnswer').d('Regenerate') as string,
@@ -622,7 +620,7 @@ const AiAnswerBubble: React.FC<AiAnswerBubbleProps> = ({
 
     return actions
   }, [
-    hasToolCards,
+    isLatestAnswerTurn,
     onCopy,
     onRegenerate,
     turn.answerLoading,

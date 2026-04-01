@@ -8,6 +8,7 @@ import type { ConversationTurnProps } from './types'
 
 const ConversationTurn: React.FC<ConversationTurnProps> = ({
   turn,
+  isLatestAnswerTurn,
   onEditQuestion,
   onCopyQuestion,
   onCopyAnswer,
@@ -33,6 +34,7 @@ const ConversationTurn: React.FC<ConversationTurnProps> = ({
       )}
       <AiAnswerBubble
         turn={turn}
+        isLatestAnswerTurn={isLatestAnswerTurn}
         onCopy={() => {
           onCopyAnswer(turn.answerMarkdown)
         }}

@@ -1099,7 +1099,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
               showEmployeeSelector &&
               activeKeyboardCharacter === '@' &&
               keyboardMentionOptions.length > 0
-            const isComposing = event.isComposing || event.nativeEvent.isComposing
+            const isComposing = Boolean(event.nativeEvent.isComposing)
 
             if (isKeyboardEmployeeMenuOpen) {
               if (event.key === 'ArrowDown') {

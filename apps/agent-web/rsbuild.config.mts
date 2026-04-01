@@ -6,7 +6,7 @@ import { pluginNodePolyfill } from '@rsbuild/plugin-node-polyfill';
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { name as packageName } from './package.json';
+const APP_NAME = 'agent-web';
 
 // ========== 常量定义 ==========
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -74,7 +74,7 @@ export default defineConfig({
 
   html: {
     template: TEMPLATE_PATH,
-    mountId: packageName, // 修改根元素的 id
+    mountId: APP_NAME, // 修改根元素的 id
   },
 
   output: {
@@ -135,9 +135,9 @@ export default defineConfig({
   tools: {
     rspack: {
       output: {
-        library: `${packageName}-[name]`,
+        library: `${APP_NAME}-[name]`,
         libraryTarget: 'umd', // 必须声明为 umd 格式
-        chunkLoadingGlobal: `webpackJsonp_${packageName}`, // 避免全局变量冲突
+        chunkLoadingGlobal: `webpackJsonp_${APP_NAME}`, // 避免全局变量冲突
       },
     },
   },

@@ -1,4 +1,4 @@
-import { CloseOutlined } from '@ant-design/icons'
+import { CloseOutlined, FullscreenExitOutlined, FullscreenOutlined } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
 import clsx from 'clsx'
 import type React from 'react'
@@ -12,7 +12,13 @@ import PreviewPlaceholder from './PreviewPlaceholder'
 import styles from './index.module.less'
 import type { RightSideAreaProps } from './types'
 
-const RightSideArea: React.FC<RightSideAreaProps> = ({ visible, payload, onClose }) => {
+const RightSideArea: React.FC<RightSideAreaProps> = ({
+  visible,
+  payload,
+  onClose,
+  fullscreen,
+  onToggleFullscreen,
+}) => {
   const renderGenericPreviewBody = () => {
     if (!payload) {
       return <PreviewPlaceholder />
@@ -39,12 +45,22 @@ const RightSideArea: React.FC<RightSideAreaProps> = ({ visible, payload, onClose
     }
 
     if (payload.sourceType === 'artifact') {
-      return <PreviewArtifact payload={payload} onClose={onClose} />
+      return (
+        <PreviewArtifact
+          payload={payload}
+          onClose={onClose}
+          fullscreen={fullscreen}
+          onToggleFullscreen={onToggleFullscreen}
+        />
+      )
     }
 
     const previewTitle =
       payload.title.trim() || (intl.get('dipChatKit.previewAreaTitle').d('预览') as string)
     const closeTitle = intl.get('dipChatKit.closePreview').d('关闭预览') as string
+    const fullscreenTitle = fullscreen
+      ? (intl.get('dipChatKit.exitFullscreenPreview').d('退出全屏') as string)
+      : (intl.get('dipChatKit.fullscreenPreview').d('全屏预览') as string)
 
     return (
       <div className={styles.panel}>
@@ -55,6 +71,14 @@ const RightSideArea: React.FC<RightSideAreaProps> = ({ visible, payload, onClose
             </Tooltip>
           </div>
           <div className={styles.panelHeaderRight}>
+            <Tooltip title={fullscreenTitle}>
+              <Button
+                type="text"
+                aria-label={fullscreenTitle}
+                icon={fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                onClick={onToggleFullscreen}
+              />
+            </Tooltip>
             <Tooltip title={closeTitle}>
               <Button
                 type="text"

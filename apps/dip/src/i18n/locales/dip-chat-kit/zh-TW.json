@@ -19,6 +19,8 @@
     "conversationTitle": "對話 AI 生成",
     "previewAreaTitle": "預覽區",
     "closePreview": "關閉預覽",
+    "fullscreenPreview": "全螢幕預覽",
+    "exitFullscreenPreview": "退出全螢幕",
     "rightSideAreaPlaceholderTitle": "RightSideArea 佔位區域",
     "previewPlaceholder": "後續會在這裡承載回答卡片聯動的詳細預覽內容。",
     "artifactPreviewTitle": "檔案預覽：{fileName}",

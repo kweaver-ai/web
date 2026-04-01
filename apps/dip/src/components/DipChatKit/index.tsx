@@ -98,6 +98,7 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
     closePreview,
     setChatPanelSize,
   } = useDipChatKitStore()
+  const [previewFullscreen, setPreviewFullscreen] = useState(false)
   const [digitalHumanName, setDigitalHumanName] = useState('')
   const digitalHumanNameCacheRef = useRef<Record<string, string>>({})
 
@@ -127,6 +128,11 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
   }, [messageTurns, sessionId])
 
   const previewVisible = preview.visible
+
+  useEffect(() => {
+    if (previewVisible) return
+    setPreviewFullscreen(false)
+  }, [previewVisible])
 
   useEffect(() => {
     if (!digitalHumanAgentId) {
@@ -162,7 +168,15 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
   }, [digitalHumanAgentId])
 
   return (
-    <div className={clsx('DipChatKit', styles.root, className)} style={style}>
+    <div
+      className={clsx(
+        'DipChatKit',
+        styles.root,
+        previewFullscreen && styles.previewFullscreen,
+        className,
+      )}
+      style={style}
+    >
       {showHeader && (
         <DipChatHeader title={conversationTitle} digitalHumanName={digitalHumanName} />
       )}
@@ -206,6 +220,10 @@ const DipChatKitInner: React.FC<Omit<DipChatKitProps, 'initialSubmitPayload' | '
                 visible={previewVisible}
                 payload={preview.payload}
                 onClose={closePreview}
+                fullscreen={previewFullscreen}
+                onToggleFullscreen={() => {
+                  setPreviewFullscreen((prevState) => !prevState)
+                }}
               />
             </div>
           </Splitter.Panel>

@@ -1,4 +1,9 @@
-import { CloseOutlined, DownloadOutlined } from '@ant-design/icons'
+import {
+  CloseOutlined,
+  DownloadOutlined,
+  FullscreenExitOutlined,
+  FullscreenOutlined,
+} from '@ant-design/icons'
 import { CodeHighlighter } from '@ant-design/x'
 import { Avatar, Button, message, Segmented, Skeleton, Tooltip } from 'antd'
 import clsx from 'clsx'
@@ -104,7 +109,12 @@ const getHtmlDocumentHeight = (doc: Document): number => {
   return Math.max(0, ...candidates)
 }
 
-const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) => {
+const PreviewArtifact: React.FC<PreviewArtifactProps> = ({
+  payload,
+  onClose,
+  fullscreen,
+  onToggleFullscreen,
+}) => {
   const [activeTab, setActiveTab] = useState<ArtifactPreviewTab>('preview')
   const [downloading, setDownloading] = useState(false)
   const [state, setState] = useState<ArtifactPreviewState>(createInitialState)
@@ -455,6 +465,9 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
   }
 
   const fileName = previewMeta?.fileName || ''
+  const fullscreenTitle = fullscreen
+    ? (intl.get('dipChatKit.exitFullscreenPreview').d('退出全屏') as string)
+    : (intl.get('dipChatKit.fullscreenPreview').d('全屏预览') as string)
 
   return (
     <div className={clsx('PreviewArtifact', styles.root)}>
@@ -487,6 +500,14 @@ const PreviewArtifact: React.FC<PreviewArtifactProps> = ({ payload, onClose }) =
               onClick={() => {
                 void handleDownload()
               }}
+            />
+          </Tooltip>
+          <Tooltip title={fullscreenTitle}>
+            <Button
+              type="text"
+              aria-label={fullscreenTitle}
+              icon={fullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+              onClick={onToggleFullscreen}
             />
           </Tooltip>
           <Tooltip title={intl.get('dipChatKit.closePreview').d('关闭预览')}>

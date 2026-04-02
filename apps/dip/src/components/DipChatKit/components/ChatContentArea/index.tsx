@@ -25,6 +25,37 @@ import styles from './index.module.less'
 import type { ChatContentAreaProps } from './types'
 import { buildRegeneratePayload, mapSessionMessagesToTurns } from './utils'
 
+const execCopyText = (text: string): boolean => {
+  let copySuccess = false
+
+  const onCopy = (event: ClipboardEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    event.clipboardData?.clearData()
+    event.clipboardData?.setData('text/plain', text)
+    copySuccess = true
+  }
+
+  try {
+    document.addEventListener('copy', onCopy, { capture: true })
+    document.execCommand('copy')
+    return copySuccess
+  } catch {
+    return false
+  } finally {
+    document.removeEventListener('copy', onCopy, { capture: true })
+  }
+}
+
+const copyPlainText = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return execCopyText(text)
+  }
+}
+
 const ChatContentArea: React.FC<ChatContentAreaProps> = ({
   sessionId,
   assignEmployeeValue,
@@ -491,14 +522,15 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
       return
     }
 
-    try {
-      await navigator.clipboard.writeText(text)
+    const copied = await copyPlainText(text)
+    if (copied) {
       message.success(successMessage)
-    } catch {
-      message.error(
-        intl.get('dipChatKit.copyFailedCheckPermission').d('复制失败，请检查浏览器权限设置'),
-      )
+      return
     }
+
+    message.error(
+      intl.get('dipChatKit.copyFailedCheckPermission').d('复制失败，请检查浏览器权限设置'),
+    )
   }, [])
 
   const handleEditQuestion = useCallback((_turnId: string, _question: string) => {

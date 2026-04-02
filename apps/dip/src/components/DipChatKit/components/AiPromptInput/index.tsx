@@ -19,10 +19,10 @@ import uniq from 'lodash/uniq'
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import intl from 'react-intl-universal'
-import { getDigitalHumanList } from '../../apis'
 import IconFont from '@/components/IconFont'
 import ResizeObserver from '@/components/ResizeObserver'
 import useResizeObserver from '@/hooks/useResizeObserver'
+import { getDigitalHumanList } from '../../apis'
 import styles from './index.module.less'
 import type {
   AiPromptInputProps,
@@ -54,6 +54,7 @@ const mentionAvatarColors = [
 const getInitial = (label: string) => label.trim().charAt(0) || ''
 const uploadValidateMessageKey = 'ai-prompt-upload-validate'
 const employeeSlotKey = 'ai_prompt_input_employee_slot'
+const caretPlaceholder = '\u200b'
 
 type SenderSlotItem = NonNullable<SenderProps['slotConfig']>[number]
 const emptySenderSlotConfig: NonNullable<SenderProps['slotConfig']> = []
@@ -68,6 +69,10 @@ type CaretSnapshot =
       type: 'contentEditable'
       range: Range
     }
+
+const sanitizeEditorValue = (inputValue: string): string => {
+  return inputValue.replace(/\u200b/g, '')
+}
 
 const AiPromptInput: React.FC<AiPromptInputProps> = ({
   value,
@@ -95,6 +100,8 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   const cardRef = useRef<HTMLDivElement | null>(null)
   const rafRef = useRef<number | null>(null)
   const keyboardOpenRafRef = useRef<number | null>(null)
+  const rebuildVersionRef = useRef(0)
+  const isRebuildingContentRef = useRef(false)
   const suppressNextSubmitRef = useRef(false)
   const caretSnapshotRef = useRef<CaretSnapshot | null>(null)
   const isMentionMenuMouseDownRef = useRef(false)
@@ -112,6 +119,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
   const [fetchedEmployeeOptions, setFetchedEmployeeOptions] = useState<AiPromptMentionOption[]>([])
 
   const mergedValue = value ?? innerValue
+  const normalizedMergedValue = sanitizeEditorValue(mergedValue)
   const canEdit = !disabled
   const canSubmit = !(disabled || loading)
   const normalizedAssignEmployeeValue = assignEmployeeValue?.trim() || ''
@@ -285,28 +293,40 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     }
   }, [])
 
-  const rebuildSenderContent = useCallback((nextContent: string, nextEmployee?: AiPromptMentionOption) => {
-    const senderInstance = senderRef.current
-    if (!senderInstance) return
+  const rebuildSenderContent = useCallback(
+    (nextContent: string, nextEmployee?: AiPromptMentionOption) => {
+      const senderInstance = senderRef.current
+      if (!senderInstance) return
 
-    latestTextValueRef.current = nextContent
+      latestTextValueRef.current = sanitizeEditorValue(nextContent)
 
-    const insertItems: SenderSlotItem[] = []
-    if (showEmployeeSelector && nextEmployee) {
-      insertItems.push(createEmployeeSlotItem(nextEmployee))
-    }
-    if (nextContent) {
-      insertItems.push({
-        type: 'text',
-        value: nextContent,
+      const insertItems: SenderSlotItem[] = []
+      if (showEmployeeSelector && nextEmployee) {
+        insertItems.push(createEmployeeSlotItem(nextEmployee))
+      }
+      if (nextContent) {
+        insertItems.push({
+          type: 'text',
+          value: nextContent,
+        })
+      }
+
+      const currentVersion = rebuildVersionRef.current + 1
+      rebuildVersionRef.current = currentVersion
+      isRebuildingContentRef.current = true
+
+      senderInstance.clear?.()
+      if (insertItems.length) {
+        senderInstance.insert?.(insertItems, 'start', undefined, true)
+      }
+
+      requestAnimationFrame(() => {
+        if (rebuildVersionRef.current !== currentVersion) return
+        isRebuildingContentRef.current = false
       })
-    }
-
-    senderInstance.clear?.()
-    if (insertItems.length) {
-      senderInstance.insert?.(insertItems, 'start', undefined, true)
-    }
-  }, [createEmployeeSlotItem, showEmployeeSelector])
+    },
+    [createEmployeeSlotItem, showEmployeeSelector],
+  )
 
   const buildSuggestionItems = (
     options: AiPromptMentionOption[],
@@ -510,6 +530,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
             inputElement.contains(snapshot.range.endContainer)
           )
         ) {
+          normalizeCaretAfterEmployeeSlot()
           return
         }
         const selection = window.getSelection()
@@ -517,6 +538,69 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
         selection.removeAllRanges()
         selection.addRange(snapshot.range)
       }
+    })
+  }
+
+  const normalizeCaretAfterEmployeeSlot = () => {
+    requestAnimationFrame(() => {
+      if (!showEmployeeSelector) return
+
+      const inputElement = senderRef.current?.inputElement
+      if (!(inputElement instanceof HTMLElement)) return
+      if (inputElement instanceof HTMLTextAreaElement) return
+
+      const slotNode = inputElement.querySelector(`[data-slot-key="${employeeSlotKey}"]`)
+      if (!slotNode) return
+
+      const currentContent = sanitizeEditorValue(
+        senderRef.current?.getValue?.().value ?? latestTextValueRef.current,
+      )
+      if (currentContent.length > 0) return
+
+      placeCaretAfterEmployeeSlot()
+    })
+  }
+
+  const placeCaretAfterEmployeeSlot = () => {
+    senderRef.current?.focus?.()
+
+    requestAnimationFrame(() => {
+      const inputElement = senderRef.current?.inputElement
+      if (!(inputElement instanceof HTMLElement)) return
+      if (inputElement instanceof HTMLTextAreaElement) return
+
+      const selection = window.getSelection()
+      if (!selection) return
+
+      const slotNode = inputElement.querySelector(`[data-slot-key="${employeeSlotKey}"]`)
+      const range = document.createRange()
+
+      if (slotNode?.parentNode) {
+        const nextSibling = slotNode.nextSibling
+        let caretAnchor: Text
+        let caretOffset = 0
+
+        if (nextSibling?.nodeType === Node.TEXT_NODE) {
+          caretAnchor = nextSibling as Text
+          if (!caretAnchor.data.length) {
+            caretAnchor.data = caretPlaceholder
+            caretOffset = 1
+          }
+        } else {
+          caretAnchor = document.createTextNode(caretPlaceholder)
+          slotNode.parentNode.insertBefore(caretAnchor, nextSibling ?? null)
+          caretOffset = 1
+        }
+
+        range.setStart(caretAnchor, caretOffset)
+        range.collapse(true)
+      } else {
+        range.selectNodeContents(inputElement)
+        range.collapse(false)
+      }
+
+      selection.removeAllRanges()
+      selection.addRange(range)
     })
   }
 
@@ -563,7 +647,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
       return
     }
 
-    const nextContent = content.trim()
+    const nextContent = sanitizeEditorValue(content).trim()
     const hasContentOrFiles = Boolean(nextContent || attachments.length)
     if (!(hasContentOrFiles && canSubmit)) {
       return
@@ -578,10 +662,12 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
         (slot.props as { employeeValue?: string } | undefined)?.employeeValue?.trim() ?? ''
       if (!slotEmployeeValue) return undefined
 
-      return buttonMentionOptionMap.get(slotEmployeeValue) ?? {
-        value: slotEmployeeValue,
-        label: slotEmployeeValue,
-      }
+      return (
+        buttonMentionOptionMap.get(slotEmployeeValue) ?? {
+          value: slotEmployeeValue,
+          label: slotEmployeeValue,
+        }
+      )
     })()
 
     const submitEmployees =
@@ -589,9 +675,9 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
         ? employees
         : slotEmployee
           ? [slotEmployee]
-        : normalizedAssignEmployeeValue
-          ? [{ value: normalizedAssignEmployeeValue, label: normalizedAssignEmployeeValue }]
-          : []
+          : normalizedAssignEmployeeValue
+            ? [{ value: normalizedAssignEmployeeValue, label: normalizedAssignEmployeeValue }]
+            : []
 
     if (!submitEmployees.length) {
       message.warning(intl.get('dipChatKit.selectDigitalHumanFirst').d('请先选择一个数字员工'))
@@ -625,10 +711,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     return `${content.slice(0, index)}${content.slice(index + triggerText.length)}`
   }
 
-  const handleMentionSelect = (
-    option: AiPromptMentionOption,
-    source: 'button' | 'keyboard',
-  ) => {
+  const handleMentionSelect = (option: AiPromptMentionOption, source: 'button' | 'keyboard') => {
     if (!canEdit) return
 
     const isEmployeeSelection = buttonMentionOptionMap.has(option.value)
@@ -660,21 +743,27 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     if (source === 'keyboard') {
       const mentionCharacter = activeKeyboardCharacter ?? '@'
       const replaceText = `${mentionCharacter}${mentionQuery}`
-      const currentContent = senderRef.current?.getValue?.().value ?? latestTextValueRef.current
+      const currentContent = sanitizeEditorValue(
+        senderRef.current?.getValue?.().value ?? latestTextValueRef.current,
+      )
       const nextContent = removeLastTriggerText(currentContent, replaceText)
       setEmployees([option])
       rebuildSenderContent(nextContent, option)
       closeMentionPanel()
       senderRef.current?.focus?.()
+      normalizeCaretAfterEmployeeSlot()
       return
     }
 
-    const currentContent = senderRef.current?.getValue?.().value ?? latestTextValueRef.current
+    const currentContent = sanitizeEditorValue(
+      senderRef.current?.getValue?.().value ?? latestTextValueRef.current,
+    )
     setEmployees([option])
     rebuildSenderContent(currentContent, option)
 
     closeMentionPanel()
-    senderRef.current?.focus?.()
+    restoreCaretSnapshot()
+    normalizeCaretAfterEmployeeSlot()
   }
 
   const handleButtonMentionMenuClick: MenuProps['onClick'] = ({ key }) => {
@@ -682,6 +771,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     if (clickedKey === selectedEmployeeKey) {
       closeMentionPanel()
       restoreCaretSnapshot()
+      normalizeCaretAfterEmployeeSlot()
       return
     }
 
@@ -696,6 +786,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     if (isKeyboardEmployeeMenu && clickedKey === selectedEmployeeKey) {
       closeMentionPanel()
       restoreCaretSnapshot()
+      normalizeCaretAfterEmployeeSlot()
       return
     }
 
@@ -734,16 +825,18 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     slotConfig?: Readonly<SenderSlotItem[]>,
   ): AiPromptMentionOption | undefined => {
     const slot = slotConfig?.find((item) => item.key === employeeSlotKey)
-    if (!slot || !('props' in slot)) return undefined
+    if (!(slot && 'props' in slot)) return undefined
 
     const employeeValue =
       (slot.props as { employeeValue?: string } | undefined)?.employeeValue?.trim() ?? ''
     if (!employeeValue) return undefined
 
-    return buttonMentionOptionMap.get(employeeValue) ?? {
-      value: employeeValue,
-      label: employeeValue,
-    }
+    return (
+      buttonMentionOptionMap.get(employeeValue) ?? {
+        value: employeeValue,
+        label: employeeValue,
+      }
+    )
   }
 
   useEffect(() => {
@@ -811,7 +904,9 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
     }
 
     if (showEmployeeSelector && activeKeyboardCharacter === '@' && selectedEmployeeKey) {
-      const selectedIndex = keyboardMentionOptions.findIndex((item) => item.value === selectedEmployeeKey)
+      const selectedIndex = keyboardMentionOptions.findIndex(
+        (item) => item.value === selectedEmployeeKey,
+      )
       if (selectedIndex >= 0) {
         setKeyboardActiveIndex(selectedIndex)
         return
@@ -846,10 +941,13 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 
     const senderValue = senderInstance.getValue?.()
     const currentContent = senderValue?.value ?? latestTextValueRef.current
-    const currentEmployeeSlot = senderValue?.slotConfig?.find((item) => item.key === employeeSlotKey)
+    const currentEmployeeSlot = senderValue?.slotConfig?.find(
+      (item) => item.key === employeeSlotKey,
+    )
     const currentEmployeeValue = String(
       currentEmployeeSlot && 'props' in currentEmployeeSlot
-        ? (currentEmployeeSlot.props as { employeeValue?: string } | undefined)?.employeeValue ?? ''
+        ? ((currentEmployeeSlot.props as { employeeValue?: string } | undefined)?.employeeValue ??
+            '')
         : '',
     )
     const nextEmployeeValue = selectedEmployee?.value ?? ''
@@ -1018,13 +1116,14 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
             senderRef.current?.focus?.()
           }}
           onChange={(nextValue, _event, slotConfigFromSender) => {
-            latestTextValueRef.current = nextValue
+            const normalizedNextValue = sanitizeEditorValue(nextValue)
+            latestTextValueRef.current = normalizedNextValue
             if (value === undefined) {
-              setInnerValue(nextValue)
+              setInnerValue(normalizedNextValue)
             }
-            onChange?.(nextValue)
+            onChange?.(normalizedNextValue)
 
-            if (showEmployeeSelector) {
+            if (showEmployeeSelector && !isRebuildingContentRef.current) {
               const effectiveSlotConfig =
                 slotConfigFromSender ?? senderRef.current?.getValue?.().slotConfig
 
@@ -1045,10 +1144,10 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
             }
 
             const inputElement = senderRef.current?.inputElement
-            let valueBeforeCursor = nextValue
+            let valueBeforeCursor = normalizedNextValue
             if (inputElement instanceof HTMLTextAreaElement) {
-              const cursorIndex = inputElement.selectionStart ?? nextValue.length
-              valueBeforeCursor = nextValue.slice(0, cursorIndex)
+              const cursorIndex = inputElement.selectionStart ?? normalizedNextValue.length
+              valueBeforeCursor = normalizedNextValue.slice(0, cursorIndex)
             } else if (inputElement instanceof HTMLElement) {
               const textBeforeCursor = getContentEditableTextBeforeCursor(inputElement)
               valueBeforeCursor = textBeforeCursor
@@ -1080,15 +1179,26 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
           }}
           onBlur={() => {
             if (isMentionMenuMouseDownRef.current) return
-            if (
-              buttonMentionOpen ||
-              keyboardMentionOpen ||
-              keyboardOpenRafRef.current !== null
-            ) {
+            if (buttonMentionOpen || keyboardMentionOpen || keyboardOpenRafRef.current !== null) {
               closeMentionPanel()
             }
           }}
           onKeyDown={(event) => {
+            if (
+              showEmployeeSelector &&
+              !keyboardMentionOpen &&
+              selectedEmployeeKey &&
+              normalizedMergedValue.length === 0 &&
+              (event.key === 'Backspace' || event.key === 'Delete')
+            ) {
+              event.preventDefault()
+              setEmployees([])
+              rebuildSenderContent('')
+              closeMentionPanel()
+              senderRef.current?.focus?.()
+              return
+            }
+
             if (keyboardMentionOpen && event.key === 'Enter') {
               event.preventDefault()
               event.stopPropagation()
@@ -1115,15 +1225,16 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                 event.preventDefault()
                 setKeyboardActiveIndex((prev) => {
                   const current = prev >= 0 ? prev : 0
-                  return (current - 1 + keyboardMentionOptions.length) % keyboardMentionOptions.length
+                  return (
+                    (current - 1 + keyboardMentionOptions.length) % keyboardMentionOptions.length
+                  )
                 })
                 return
               }
 
               if (event.key === 'Enter' && !isComposing) {
                 suppressSubmitForCurrentFrame()
-                const normalizedIndex =
-                  keyboardActiveIndex >= 0 ? keyboardActiveIndex : 0
+                const normalizedIndex = keyboardActiveIndex >= 0 ? keyboardActiveIndex : 0
                 const activeOption = keyboardMentionOptions[normalizedIndex]
                 if (!activeOption) return
 
@@ -1144,11 +1255,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
 
             if (
               event.key === 'Escape' &&
-              (
-                buttonMentionOpen ||
-                keyboardMentionOpen ||
-                keyboardOpenRafRef.current !== null
-              )
+              (buttonMentionOpen || keyboardMentionOpen || keyboardOpenRafRef.current !== null)
             ) {
               closeMentionPanel()
             }
@@ -1157,11 +1264,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
             const { SendButton, LoadingButton } = info.components
 
             return (
-              <Flex
-                align="center"
-                justify="space-between"
-                className={styles.footer}
-              >
+              <Flex align="center" justify="space-between" className={styles.footer}>
                 <Flex align="center" className={styles.leftActions}>
                   {showEmployeeSelector && (
                     <Dropdown
@@ -1181,12 +1284,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                             disabled={!(canEdit && buttonSuggestionItems.length)}
                             onMouseDownCapture={captureCaretSnapshot}
                             onClick={openMentionPanel}
-                            icon={
-                              <IconFont
-                                type="icon-at"
-                                className={styles.actionIcon}
-                              />
-                            }
+                            icon={<IconFont type="icon-at" className={styles.actionIcon} />}
                           />
                         </span>
                       </Tooltip>
@@ -1211,12 +1309,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                         type="text"
                         aria-label={resolvedAttachButtonTitle}
                         disabled={!canEdit}
-                        icon={
-                          <IconFont
-                            type="icon-attachment"
-                            className={styles.actionIcon}
-                          />
-                        }
+                        icon={<IconFont type="icon-attachment" className={styles.actionIcon} />}
                       />
                     </Upload>
                   </Tooltip>
@@ -1241,10 +1334,7 @@ const AiPromptInput: React.FC<AiPromptInputProps> = ({
                         shape="circle"
                         aria-label={resolvedSendButtonTitle}
                         disabled={
-                          !(
-                            canSubmit &&
-                            (mergedValue.trim() || attachments.length)
-                          )
+                          !(canSubmit && (normalizedMergedValue.trim() || attachments.length))
                         }
                         icon={<SendOutlined />}
                       />

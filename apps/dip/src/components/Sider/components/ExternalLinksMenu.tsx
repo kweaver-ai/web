@@ -43,7 +43,7 @@ export const ExternalLinksSection = ({ collapsed, roleIds }: ExternalLinksMenuPr
         ssoSearchParams.set('refreshToken', refreshToken)
       }
     }
-    const ssoUrl = `${baseOrigin}/interface/studioweb/internalSSO?${ssoSearchParams.toString()}`
+    const ssoUrl = `${baseOrigin}/studio`
 
     return [
       {

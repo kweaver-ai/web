@@ -10,6 +10,7 @@
     "copyFailedCheckPermission": "複製失敗，請檢查瀏覽器權限設定",
     "emptyState": "請輸入問題開始對話。",
     "questionFilledBack": "問題內容已回填至輸入框",
+    "copySucceeded": "複製成功",
     "questionCopied": "問題複製成功",
     "answerCopied": "回答複製成功",
     "targetQuestionNotFound": "未找到可重新生成的問題",

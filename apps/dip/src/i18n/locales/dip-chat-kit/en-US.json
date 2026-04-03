@@ -10,6 +10,7 @@
     "copyFailedCheckPermission": "Copy failed. Please check browser permission settings.",
     "emptyState": "Enter a question to start the conversation.",
     "questionFilledBack": "Question has been filled back into the input box.",
+    "copySucceeded": "Copied.",
     "questionCopied": "Question copied.",
     "answerCopied": "Answer copied.",
     "targetQuestionNotFound": "Unable to find the question for regeneration.",

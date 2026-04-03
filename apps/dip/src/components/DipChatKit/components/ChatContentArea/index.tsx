@@ -521,14 +521,14 @@ const ChatContentArea: React.FC<ChatContentAreaProps> = ({
 
   const handleCopyQuestion = useCallback(
     (question: string) => {
-      void copyText(question, intl.get('dipChatKit.questionCopied').d('问题复制成功') as string)
+      void copyText(question, intl.get('dipChatKit.copySucceeded').d('复制成功') as string)
     },
     [copyText],
   )
 
   const handleCopyAnswer = useCallback(
     (answer: string) => {
-      void copyText(answer, intl.get('dipChatKit.answerCopied').d('回答复制成功') as string)
+      void copyText(answer, intl.get('dipChatKit.copySucceeded').d('复制成功') as string)
     },
     [copyText],
   )
